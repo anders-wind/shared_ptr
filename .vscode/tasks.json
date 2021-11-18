@@ -7,9 +7,6 @@
             "label": "init",
             "type": "shell",
             "command": "cmake --preset=dev",
-            "problemMatcher": [
-                "$msCompile"
-            ],
             "group": "build",
         },
         {
@@ -24,7 +21,10 @@
         {
             "label": "full build",
             "type": "shell",
-            "dependsOn": ["init", "build"],
+            "dependsOn": [
+                "init",
+                "build"
+            ],
             "dependsOrder": "sequence",
             "group": "build",
         },
@@ -33,6 +33,12 @@
             "type": "shell",
             "command": "cd build/dev && ctest -C Release -j 24 --output-on-failure",
             "group": "test"
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "rmdir -r -fo build; rmdir -r -fo prefix",
+            "group": "build"
         }
     ]
 }
