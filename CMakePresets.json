@@ -12,7 +12,7 @@
       "warnings": {
         "dev": true,
         "deprecated": true,
-        "uninitialized": true,
+        "uninitialized": false,
         "unusedCli": true,
         "systemVars": false
       },
@@ -26,7 +26,8 @@
       "hidden": true,
       "inherits": "cmake-pedantic",
       "cacheVariables": {
-        "shared_ptr_DEVELOPER_MODE": "ON"
+        "shared_ptr_DEVELOPER_MODE": "ON",
+        "BUILD_BENCHMARK": "ON"
       }
     },
     {

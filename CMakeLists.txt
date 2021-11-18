@@ -14,6 +14,7 @@ docs_early_return()
 
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
+include(cmake/CPM.cmake)
 
 # ---- Declare library ----
 
@@ -33,20 +34,21 @@ target_include_directories(
 
 target_compile_features(shared_ptr_shared_ptr INTERFACE cxx_std_20)
 
+
 # ---- Install rules ----
 
 if(NOT CMAKE_SKIP_INSTALL_RULES)
   include(cmake/install-rules.cmake)
 endif()
 
-# ---- Examples ----
+# # ---- Examples ----
 
-if(PROJECT_IS_TOP_LEVEL)
-  option(BUILD_EXAMPLES "Build examples tree." "${shared_ptr_DEVELOPER_MODE}")
-  if(BUILD_EXAMPLES)
-    add_subdirectory(example)
-  endif()
-endif()
+# if(PROJECT_IS_TOP_LEVEL)
+#   option(BUILD_EXAMPLES "Build examples tree." "${shared_ptr_DEVELOPER_MODE}")
+#   if(BUILD_EXAMPLES)
+#     add_subdirectory(example)
+#   endif()
+# endif()
 
 # ---- Developer mode ----
 

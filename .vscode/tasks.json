@@ -1,0 +1,38 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "init",
+            "type": "shell",
+            "command": "cmake --preset=dev",
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": "build",
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "cmake --build build/dev --config Release -j 24; cmake --install build/dev --config Release --prefix prefix",
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": "build",
+        },
+        {
+            "label": "full build",
+            "type": "shell",
+            "dependsOn": ["init", "build"],
+            "dependsOrder": "sequence",
+            "group": "build",
+        },
+        {
+            "label": "test",
+            "type": "shell",
+            "command": "cd build/dev && ctest -C Release -j 24 --output-on-failure",
+            "group": "test"
+        }
+    ]
+}

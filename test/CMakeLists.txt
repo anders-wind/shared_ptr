@@ -11,8 +11,13 @@ if(PROJECT_IS_TOP_LEVEL)
   enable_testing()
 endif()
 
+CPMAddPackage("gh:onqtam/doctest#2.4.6")
+
 add_executable(shared_ptr_test source/shared_ptr_test.cpp)
-target_link_libraries(shared_ptr_test PRIVATE shared_ptr::shared_ptr)
+
+target_link_libraries(shared_ptr_test 
+  PRIVATE shared_ptr::shared_ptr doctest::doctest)
+
 target_compile_features(shared_ptr_test PRIVATE cxx_std_20)
 
 add_test(NAME shared_ptr_test COMMAND shared_ptr_test)

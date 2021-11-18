@@ -1,7 +1,12 @@
 #include "shared_ptr/shared_ptr.hpp"
 
-auto main() -> int
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
+
+TEST_SUITE("shared_ptr")
 {
-  auto result = name();
-  return result == "shared_ptr" ? 0 : 1;
+  TEST_CASE("Beginning")
+  {
+    CHECK(1 == 1);
+  }
 }
