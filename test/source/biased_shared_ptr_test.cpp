@@ -2,13 +2,13 @@
 #include <thread>
 
 #include <doctest/doctest.h>
-#include <shared_ptr/thread_local_value.hpp>
+#include <shared_ptr/bias_shared_ptr.hpp>
 
 TEST_SUITE("thread_local_value")
 {
     TEST_CASE("thread_local_value: can store stuff")
     {
-        auto value = wind::thread_local_value<int>();
+        auto value = wind::bias::make_shared<int>(0);
         CHECK(value.get() == 0);
         value.get()++;
         CHECK(value.get() == 1);
@@ -16,17 +16,16 @@ TEST_SUITE("thread_local_value")
 
     TEST_CASE("thread_local_value: two values do not share state")
     {
-        auto value1 = wind::thread_local_value<int>();
-        value1.get() = 1;
-        auto value2 = wind::thread_local_value<int>();
-        value2.get() = 42;
-        CHECK(value1 == 1);
+        auto value1 = wind::bias::make_shared<int>(1);
+        value1.get()++;
+        auto value2 = wind::bias::make_shared<int>(42);
+        CHECK(value1 == 2);
         CHECK(value2 == 42);
     }
 
     TEST_CASE("thread_local_value: copies work")
     {
-        auto value1 = wind::thread_local_value<int>();
+        auto value1 = wind::bias::make_shared<int>();
         value1.get() = 1;
         auto copy = value1;
         CHECK(value1 == 1);
@@ -35,7 +34,7 @@ TEST_SUITE("thread_local_value")
 
     TEST_CASE("thread_local_value: copies and modifications to it 'work")
     {
-        auto value1 = wind::thread_local_value<int>();
+        auto value1 = wind::bias::make_shared<int>();
         value1.get() = 1;
         auto copy = value1;
         copy.get()++;
@@ -43,21 +42,22 @@ TEST_SUITE("thread_local_value")
         CHECK(copy == 2);
     }
 
-    TEST_CASE("thread_local_value: work on one thread does not move to the other")
+    TEST_CASE("thread_local_value: assigning values on another thread works")
     {
-        auto value1 = wind::thread_local_value<int>();
+        auto value1 = wind::bias::make_shared<int>();
         value1.get() = 1;
 
         auto thread_work = std::thread(
             [&value1]()
             {
                 auto local_copy = value1;
-                CHECK(local_copy.get() == 0);
+                CHECK(local_copy.get() == 1);
                 local_copy.get() = 42;
                 CHECK(local_copy.get() == 42);
+                // local thread copy does not delete
             });
         thread_work.join();
-        CHECK(value1.get() == 1);
+        CHECK(value1.get() == 42);
     }
 
     struct DeleterFunc
@@ -73,7 +73,7 @@ TEST_SUITE("thread_local_value")
     {
         auto was_called = std::make_unique<bool>(false);
         {
-            auto value = wind::thread_local_value<DeleterFunc>();
+            auto value = wind::bias::make_shared<DeleterFunc>();
             value.get().was_deleted = was_called.get();
             {
                 auto copy = value;
