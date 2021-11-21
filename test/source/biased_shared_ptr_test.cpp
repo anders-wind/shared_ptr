@@ -6,6 +6,73 @@
 
 TEST_SUITE("thread_local_value")
 {
+    TEST_CASE("thread_local_value: nullptr destruction is ok for copies")
+    {
+        wind::bias::shared_ptr<int> val;
+
+        auto copy = val;
+
+        wind::bias::shared_ptr<int> operator_copy;
+        operator_copy = copy;
+
+        auto init_operator_copy = wind::bias::make_shared<int>(42);
+        init_operator_copy = operator_copy;
+    }
+
+    TEST_CASE("thread_local_value: nullptr destruction is ok for moves")
+    {
+        wind::bias::shared_ptr<int> val;
+
+        auto copy = std::move(val);
+
+        wind::bias::shared_ptr<int> operator_move;
+        operator_move = std::move(copy);
+
+        auto init_operator_move = wind::bias::make_shared<int>(42);
+        init_operator_move = std::move(operator_move);
+    }
+
+    TEST_CASE("thread_local_value: copy constructors work")
+    {
+        auto val = wind::bias::make_shared<int>(42);
+
+        // copy constructor
+        auto copy = val;
+        CHECK(val == 42);
+        CHECK(copy == 42);
+
+        // copy operator= with uninitialized
+        wind::bias::shared_ptr<int> operator_copy;
+        operator_copy = copy;
+        CHECK(copy == 42);
+        CHECK(operator_copy == 42);
+
+        // copy operator= with initialized
+        auto init_operator_copy = wind::bias::make_shared<int>(99);
+        init_operator_copy = operator_copy;
+        CHECK(operator_copy == 42);
+        CHECK(init_operator_copy == 42);
+    }
+
+    TEST_CASE("thread_local_value: move constructors work")
+    {
+        auto val = wind::bias::make_shared<int>(42);
+
+        puts("// move constructor");
+        auto copy = std::move(val);
+        CHECK(copy == 42);
+
+        puts("// move operator= with uninitialized");
+        wind::bias::shared_ptr<int> operator_copy;
+        operator_copy = std::move(copy);
+        CHECK(operator_copy == 42);
+
+        puts("// move operator= with initialized");
+        auto init_operator_copy = wind::bias::make_shared<int>(99);
+        init_operator_copy = std::move(operator_copy);
+        CHECK(init_operator_copy == 42);
+    }
+
     TEST_CASE("thread_local_value: can store stuff")
     {
         auto value = wind::bias::make_shared<int>(0);
