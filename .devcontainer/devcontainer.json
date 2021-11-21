@@ -19,8 +19,10 @@
 	"settings": {},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
-		"ms-vscode.cpptools"
-		"matepek.vscode-catch2-test-adapter"
+		"matepek.vscode-catch2-test-adapter",
+		"ms-vscode.cpptools-extension-pack",
+		"ms-vscode.cpptools",
+		"tabnine.tabnine-vscode",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

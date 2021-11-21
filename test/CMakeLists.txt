@@ -13,7 +13,10 @@ endif()
 
 CPMAddPackage("gh:onqtam/doctest#2.4.6")
 
-add_executable(shared_ptr_test source/shared_ptr_test.cpp)
+add_executable(shared_ptr_test 
+  source/main_test.cpp 
+  source/shared_ptr_test.cpp 
+  source/thread_local_value_test.cpp)
 
 target_link_libraries(shared_ptr_test 
   PRIVATE shared_ptr::shared_ptr doctest::doctest)

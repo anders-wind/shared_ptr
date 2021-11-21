@@ -7,7 +7,7 @@ project(
     VERSION 0.1.0
     DESCRIPTION "Shared pointer experiments"
     HOMEPAGE_URL "https://example.com/"
-    LANGUAGES NONE
+    LANGUAGES CXX
 )
 
 docs_early_return()
@@ -15,6 +15,11 @@ docs_early_return()
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
 include(cmake/CPM.cmake)
+
+
+# ---- Dependencies ----
+
+find_package(Threads REQUIRED)
 
 # ---- Declare library ----
 
@@ -34,6 +39,7 @@ target_include_directories(
 
 target_compile_features(shared_ptr_shared_ptr INTERFACE cxx_std_20)
 
+target_link_libraries(shared_ptr_shared_ptr INTERFACE Threads::Threads)
 
 # ---- Install rules ----
 
