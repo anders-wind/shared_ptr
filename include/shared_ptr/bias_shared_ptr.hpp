@@ -19,14 +19,14 @@ struct shared_ptr
     element_type* elem_;
 
   public:
-    shared_ptr()
+    shared_ptr() noexcept
         : key_ {}
         , g_count_(nullptr)
         , elem_(nullptr)
     {
     }
 
-    shared_ptr(element_type* elem)
+    explicit shared_ptr(element_type* elem) noexcept
         : key_ {}
         , g_count_(new std::atomic<global_reference_counter_type>(0))
         , elem_(elem)
@@ -35,7 +35,7 @@ struct shared_ptr
         this->initialize_if_not_exists(1);
     }
 
-    shared_ptr(const shared_ptr& other)
+    shared_ptr(const shared_ptr& other) noexcept
         : key_(other.key_)
         , g_count_(other.g_count_)
         , elem_(other.elem_)
@@ -45,7 +45,7 @@ struct shared_ptr
         }
     }
 
-    shared_ptr& operator=(const shared_ptr& other)
+    shared_ptr& operator=(const shared_ptr& other) noexcept
     {
         this->decrement_and_maybe_delete();
 
@@ -61,7 +61,7 @@ struct shared_ptr
     }
 
     // not movable for now.
-    shared_ptr(shared_ptr&& other)
+    shared_ptr(shared_ptr&& other) noexcept
         : key_(std::move(other.key_))
         , g_count_(std::move(other.g_count_))
         , elem_(std::move(other.elem_))
@@ -73,7 +73,7 @@ struct shared_ptr
         }
     }
 
-    shared_ptr& operator=(shared_ptr&& other)
+    shared_ptr& operator=(shared_ptr&& other) noexcept
     {
         if (this->g_count_ != nullptr) {
             this->decrement_and_maybe_delete();
@@ -90,33 +90,48 @@ struct shared_ptr
         return *this;
     }
 
-    ~shared_ptr()
+    ~shared_ptr() noexcept
     {
         this->decrement_and_maybe_delete();
     }
 
-    T& get()
+    element_type* get() noexcept
+    {
+        return this->elem_;
+    }
+
+    const element_type* get() const noexcept
+    {
+        return this->elem_;
+    }
+
+    element_type& operator*() noexcept
     {
         return *this->elem_;
     }
 
-    const T& get() const
+    const element_type& operator*() const noexcept
     {
         return *this->elem_;
     }
 
-    operator T&()
+    const element_type* operator->() const noexcept
     {
-        return *this->elem_;
+        return this->elem_;
     }
 
-    operator const T&() const
+    element_type* operator->() noexcept
     {
-        return *this->elem_;
+        return this->elem_;
+    }
+
+    void reset(element_type* elem)
+    {
+        *this = shared_ptr<element_type>(elem);
     }
 
   private:
-    void initialize_if_not_exists(local_reference_counter_type initial_count)
+    void initialize_if_not_exists(local_reference_counter_type initial_count) noexcept
     {
         if (pthread_getspecific(this->key_) == nullptr) {
             pthread_setspecific(this->key_, new local_reference_counter_type(initial_count));
@@ -124,13 +139,13 @@ struct shared_ptr
         }
     }
 
-    void increment_and_initialize_if_not_exists()
+    void increment_and_initialize_if_not_exists() noexcept
     {
         this->initialize_if_not_exists(0);
         (*static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_)))++;
     }
 
-    void decrement_and_maybe_delete()
+    void decrement_and_maybe_delete() noexcept
     {
         auto count = static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_));
         if (count != nullptr) {
