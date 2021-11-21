@@ -110,7 +110,7 @@ template<typename T, typename... Args>
 auto make_shared(Args&&... args)
 {
     using element_type = typename std::remove_extent_t<T>;
-    return shared_ptr<element_type>(new T(std::forward<Args>(args)...));
+    return shared_ptr<element_type>(new T {std::forward<Args>(args)...});
 }
 
 }  // namespace regular

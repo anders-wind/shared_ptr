@@ -130,6 +130,23 @@ struct shared_ptr
         *this = shared_ptr<element_type>(elem);
     }
 
+    void release()
+    {
+        this->decrement_and_maybe_delete();
+    }
+
+    operator bool() const noexcept
+    {
+        return this->elem_ != nullptr;
+    }
+
+    void swap(shared_ptr other)
+    {
+        std::swap(this->key_, other->key_);
+        std::swap(this->g_count_, other->g_count_);
+        std::swap(this->elem_, other->elem_);
+    }
+
   private:
     void initialize_if_not_exists(local_reference_counter_type initial_count) noexcept
     {
