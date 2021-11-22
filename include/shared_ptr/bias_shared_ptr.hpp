@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <pthread.h>  // TODO handle this cross-platform
 
 namespace wind
@@ -47,20 +48,21 @@ struct shared_ptr
 
     shared_ptr& operator=(const shared_ptr& other) noexcept
     {
-        this->decrement_and_maybe_delete();
+        if (this->elem_ != other.elem_) {
+            this->decrement_and_maybe_delete();
 
-        this->key_ = other.key_;
-        this->elem_ = other.elem_;
-        this->g_count_ = other.g_count_;
+            this->key_ = other.key_;
+            this->elem_ = other.elem_;
+            this->g_count_ = other.g_count_;
 
-        if (this->g_count_ != nullptr) {
-            this->increment_and_initialize_if_not_exists();
+            if (this->g_count_ != nullptr) {
+                this->increment_and_initialize_if_not_exists();
+            }
         }
 
         return *this;
     }
 
-    // not movable for now.
     shared_ptr(shared_ptr&& other) noexcept
         : key_(std::move(other.key_))
         , g_count_(std::move(other.g_count_))
@@ -75,6 +77,7 @@ struct shared_ptr
 
     shared_ptr& operator=(shared_ptr&& other) noexcept
     {
+        // TODO(anders.wind) equal eachother
         if (this->g_count_ != nullptr) {
             this->decrement_and_maybe_delete();
         }
@@ -148,29 +151,39 @@ struct shared_ptr
     }
 
   private:
+    local_reference_counter_type* get_local_count()
+    {
+        return static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_));
+    }
+
     void initialize_if_not_exists(local_reference_counter_type initial_count) noexcept
     {
         if (pthread_getspecific(this->key_) == nullptr) {
             pthread_setspecific(this->key_, new local_reference_counter_type(initial_count));
-            (*this->g_count_)++;
+            this->g_count_->fetch_add(1);
         }
     }
 
     void increment_and_initialize_if_not_exists() noexcept
     {
         this->initialize_if_not_exists(0);
-        (*static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_)))++;
+        (*this->get_local_count())++;
     }
 
     void decrement_and_maybe_delete() noexcept
     {
-        auto count = static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_));
-        if (count != nullptr) {
-            if (--(*count) <= 0) {
-                if (--(*this->g_count_) <= 0) {
-                    delete this->g_count_;
-                    delete this->elem_;
-                    pthread_key_delete(this->key_);
+        if (this->g_count_ != nullptr) {
+            auto count = this->get_local_count();
+            if (count != nullptr) {
+                if (--(*count) == 0) {
+                    if (this->g_count_->fetch_sub(1) - 1 == 0) {
+                        delete this->g_count_;
+                        delete this->elem_;
+                        pthread_key_delete(this->key_);
+                    } else {
+                        delete count;  // TODO optimize so this is not neccesary by checking the
+                                       // value both for nullptr and for 0 or 1
+                    }
                 }
             }
         }

@@ -61,24 +61,24 @@ void copy_back_and_forth_between_threads(int64_t num_iteration,
     }
 
     // std::barrier sync_point(num_threads);
-    auto work = [&ptrs, &num_iteration, &num_copies]()
-    {
-        auto local_ptrs = std::vector<shared_ptr_type>(num_copies);
-        // sync_point.arrive_and_wait();
-
-        for (auto i = 0; i < num_iteration; i++) {
-            for (auto j = 0; j < num_copies; j++) {
-                local_ptrs[(j + i) % num_copies] = ptrs[j % num_copies];
-                benchmark::DoNotOptimize(local_ptrs[(j + i) % num_copies]);
-            }
-        }
-        // sync_point.arrive_and_wait();
-        benchmark::DoNotOptimize(local_ptrs);
-    };
-
     auto threads = std::vector<std::thread>();
     for (auto i = 0; i < num_threads; i++) {
-        threads[i] = std::thread(work);
+        threads.push_back(std::thread(
+            [&ptrs, &num_iteration, &num_copies]()
+            {
+                auto local_ptrs = std::vector<shared_ptr_type>(num_copies);
+                // sync_point.arrive_and_wait();
+
+                for (auto i = 0; i < num_iteration; i++) {
+                    for (auto j = 0; j < num_copies; j++) {
+                        local_ptrs.at((j + i) % num_copies) = ptrs.at(j % num_copies);
+                        // benchmark::DoNotOptimize(local_ptrs.at((j + i) % num_copies));
+                    }
+                }
+
+                // sync_point.arrive_and_wait();
+                benchmark::DoNotOptimize(local_ptrs);
+            }));
     }
 
     for (auto& thread : threads) {
@@ -164,14 +164,6 @@ static void BM_copy_and_release_many_std(benchmark::State& state)
 
 // ===== copy_back_and_forth_between_threads =====
 
-static void BM_copy_back_and_forth_between_threads_local(benchmark::State& state)
-{
-    for (auto _ : state) {
-        copy_back_and_forth_between_threads(
-            state.range(0), 128, 8, [](auto i) { return wind::regular::make_shared<int>(i * 2); });
-    }
-}
-
 static void BM_copy_back_and_forth_between_threads_biased(benchmark::State& state)
 {
     for (auto _ : state) {
@@ -202,7 +194,7 @@ BENCHMARK(BM_copy_and_release_many_local)->Range(1 << 9, 8 << 10);
 BENCHMARK(BM_copy_and_release_many_biased)->Range(1 << 9, 8 << 10);
 BENCHMARK(BM_copy_and_release_many_std)->Range(1 << 9, 8 << 10);
 
-BENCHMARK(BM_copy_back_and_forth_between_threads_local)->Range(1 << 9, 8 << 10);
+// local ofcourse does not work
 BENCHMARK(BM_copy_back_and_forth_between_threads_biased)->Range(1 << 9, 8 << 10);
 BENCHMARK(BM_copy_back_and_forth_between_threads_std)->Range(1 << 9, 8 << 10);
 
