@@ -181,6 +181,7 @@ struct shared_ptr
             if (count != nullptr) {
                 if (--(*count) == 0) {
                     delete count;
+                    pthread_setspecific(this->key_, nullptr);
                     if (this->g_count_->fetch_sub(1) - 1 == 0) {
                         delete this->g_count_;
                         delete this->elem_;
