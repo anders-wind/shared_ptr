@@ -77,18 +77,22 @@ struct shared_ptr
 
     shared_ptr& operator=(shared_ptr&& other) noexcept
     {
-        // TODO(anders.wind) equal eachother
-        if (this->g_count_ != nullptr) {
-            this->decrement_and_maybe_delete();
+        if (this->elem_ != other.elem_) {
+            if (this->g_count_ != nullptr) {
+                this->decrement_and_maybe_delete();
+            }
+
+            this->key_ = std::move(other.key_);
+            this->elem_ = std::move(other.elem_);
+            this->g_count_ = std::move(other.g_count_);
+
+            if (this->g_count_ != nullptr) {
+                this->initialize_if_not_exists(1);
+            }
         }
 
-        this->key_ = std::move(other.key_);
-        this->elem_ = std::move(other.elem_);
-        this->g_count_ = std::move(other.g_count_);
-
-        if (this->g_count_ != nullptr) {
-            this->initialize_if_not_exists(1);
-        }
+        other.g_count_ = nullptr;
+        other.elem_ = nullptr;
 
         return *this;
     }
@@ -176,13 +180,11 @@ struct shared_ptr
             auto count = this->get_local_count();
             if (count != nullptr) {
                 if (--(*count) == 0) {
+                    delete count;
                     if (this->g_count_->fetch_sub(1) - 1 == 0) {
                         delete this->g_count_;
                         delete this->elem_;
                         pthread_key_delete(this->key_);
-                    } else {
-                        delete count;  // TODO optimize so this is not neccesary by checking the
-                                       // value both for nullptr and for 0 or 1
                     }
                 }
             }
