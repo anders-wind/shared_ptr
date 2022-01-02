@@ -1,4 +1,5 @@
 #include <array>
+#include <iostream>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -68,12 +69,13 @@ void copy_back_and_forth_between_threads(int64_t num_iteration,
             [&ptrs, &num_iteration, &num_copies]()
             {
                 auto local_ptrs = std::vector<shared_ptr_type>(num_copies);
+                auto local_ptrs2 = std::vector<shared_ptr_type>(num_copies);
                 // sync_point.arrive_and_wait();
 
                 for (auto i = 0; i < num_iteration; i++) {
+                    local_ptrs.at(i % num_copies) = ptrs.at(i % num_copies);
                     for (auto j = 0; j < num_copies; j++) {
-                        local_ptrs.at((j + i) % num_copies) = ptrs.at(j % num_copies);
-                        // benchmark::DoNotOptimize(local_ptrs.at((j + i) % num_copies));
+                        local_ptrs2.at((i * j) % num_copies) = local_ptrs.at((i + j) % num_copies);
                     }
                 }
 
@@ -207,7 +209,11 @@ BENCHMARK(bm_copy_and_release_many_biased)->Range(1 << 9, 8 << 10);  // NOLINT
 BENCHMARK(bm_copy_and_release_many_std)->Range(1 << 9, 8 << 10);  // NOLINT
 
 // local ofcourse does not work
-BENCHMARK(bm_copy_back_and_forth_between_threads_biased)->Range(1 << 9, 8 << 10);  // NOLINT
-BENCHMARK(bm_copy_back_and_forth_between_threads_std)->Range(1 << 9, 8 << 10);  // NOLINT
+BENCHMARK(bm_copy_back_and_forth_between_threads_biased)  // NOLINT
+    ->RangeMultiplier(2)
+    ->Range(1 << 8, 1 << 11);
+BENCHMARK(bm_copy_back_and_forth_between_threads_std)  // NOLINT
+    ->RangeMultiplier(2)
+    ->Range(1 << 8, 1 << 11);
 
 BENCHMARK_MAIN();  // NOLINT
