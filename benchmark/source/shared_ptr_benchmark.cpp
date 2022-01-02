@@ -95,7 +95,7 @@ static void bm_copying_local(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copying(state.range(0), []() { return wind::regular::make_shared<int>(42); });
+        copying(state.range(0), []() { return wind::local::make_shared<int>(42); });
     }
 }
 
@@ -122,7 +122,7 @@ static void bm_copy_and_release_local(benchmark::State& state)
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_and_release(
-            state.range(0), 128, [](auto i) { return wind::regular::make_shared<int>(i * 2); });
+            state.range(0), 128, [](auto i) { return wind::local::make_shared<int>(i * 2); });
     }
 }
 
@@ -150,7 +150,7 @@ static void bm_copy_and_release_many_local(benchmark::State& state)
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_and_release_many(
-            state.range(0), 128, [](auto i) { return wind::regular::make_shared<int>(i * 2); });
+            state.range(0), 128, [](auto i) { return wind::local::make_shared<int>(i * 2); });
     }
 }
 

@@ -1,9 +1,13 @@
 # Contributing
+We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
 
-<!--
-    Short overview, rules, general guidelines, notes about pull requests and
-    style should go here.
--->
+- Reporting a bug
+- Discussing the current state of the code
+- Submitting a fix with a Pull Request
+- Proposing new features
+
+## We Develop with Github
+We use github to host code, to track issues and feature requests, as well as accept pull requests.
 
 ## Code of Conduct
 

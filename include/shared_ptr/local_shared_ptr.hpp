@@ -5,7 +5,7 @@
 
 namespace wind
 {
-namespace regular
+namespace local
 {
 template<typename T>
 struct shared_ptr
@@ -118,6 +118,6 @@ auto make_shared(Args&&... args) -> shared_ptr<typename std::remove_extent_t<T>>
     return shared_ptr<element_type>(new T {std::forward<Args>(args)...});
 }
 
-}  // namespace regular
+}  // namespace local
 
 }  // namespace wind
