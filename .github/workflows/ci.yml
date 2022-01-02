@@ -3,11 +3,11 @@ name: Continuous Integration
 on:
   push:
     branches:
-    - master
+    - main
 
   pull_request:
     branches:
-    - master
+    - main
 
 jobs:
   lint:
@@ -23,7 +23,7 @@ jobs:
       run: pip3 install codespell
 
     - name: Lint
-      run: cmake -D FORMAT_COMMAND=clang-format-11 -P cmake/lint.cmake
+      run: cmake -D FORMAT_COMMAND=clang-format-12 -P cmake/lint.cmake
 
     - name: Spell check
       if: always()
@@ -77,7 +77,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure
-      env: { CXX: clang++-11 }
+      env: { CXX: clang++-12 }
       run: cmake --preset=ci-sanitize
 
     - name: Build
@@ -99,7 +99,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos, ubuntu, windows]
+        os: [macos, ubuntu] # windows not supported for now
 
     runs-on: ${{ matrix.os }}-latest
 
@@ -140,7 +140,7 @@ jobs:
     # this comment and the last line in the conditional below.
     # If you do not wish to use GitHub Pages for deploying documentation, then
     # simply delete this job similarly to the coverage one.
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
       && github.event_name == 'push'
       && github.repository_owner == '<name>'
       && false

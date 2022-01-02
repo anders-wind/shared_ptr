@@ -12,24 +12,20 @@ struct shared_ptr
 {
     using element_type = typename std::remove_extent_t<T>;
 
-    element_type* data;
-    size_t* counter;
+    element_type* data {nullptr};
+    size_t* counter {nullptr};
 
-    shared_ptr()
-        : data(nullptr)
-        , counter(nullptr)
-    {
-    }
+    shared_ptr() = default;
 
-    explicit shared_ptr(element_type* data)
-        : data(data)
+    explicit shared_ptr(element_type* init_data)
+        : data(init_data)
         , counter(new size_t(1))
     {
     }
 
-    shared_ptr(element_type* data, size_t* counter)
-        : data(data)
-        , counter(counter)
+    shared_ptr(element_type* init_data, size_t* init_counter)
+        : data(init_data)
+        , counter(init_counter)
     {
     }
 
@@ -40,7 +36,7 @@ struct shared_ptr
         this->get_count()++;
     }
 
-    shared_ptr(shared_ptr&& other)
+    shared_ptr(shared_ptr&& other) noexcept
         : data(other.data)
         , counter(other.counter)
     {
@@ -48,8 +44,12 @@ struct shared_ptr
         other.data = nullptr;
     }
 
-    shared_ptr& operator=(const shared_ptr& other)
+    auto operator=(const shared_ptr& other) -> shared_ptr&
     {
+        if (this == &other) {
+            return *this;
+        }
+
         if (this->data != other.data) {
             this->decrement_and_maybe_delete();
             this->counter = other.counter;
@@ -59,13 +59,18 @@ struct shared_ptr
         return *this;
     }
 
-    shared_ptr& operator=(shared_ptr&& other)
+    auto operator=(shared_ptr&& other) noexcept -> shared_ptr&
     {
+        if (this == &other) {
+            return *this;
+        }
+
         this->decrement_and_maybe_delete();
         this->counter = other.counter;
         this->data = other.data;
         other.counter = nullptr;
         other.data = nullptr;
+        return *this;
     }
 
     ~shared_ptr()
@@ -73,22 +78,22 @@ struct shared_ptr
         this->decrement_and_maybe_delete();
     }
 
-    const auto& operator*() const
+    [[nodiscard]] auto operator*() const -> const element_type&
     {
         return *this->data;
     }
 
-    auto& operator*()
+    [[nodiscard]] auto operator*() -> element_type&
     {
         return *this->data;
     }
 
-    const size_t& get_count() const
+    [[nodiscard]] auto get_count() const -> const size_t&
     {
         return *this->counter;
     }
 
-    size_t& get_count()
+    [[nodiscard]] auto get_count() -> size_t&
     {
         return *this->counter;
     }
@@ -107,7 +112,7 @@ struct shared_ptr
 };
 
 template<typename T, typename... Args>
-auto make_shared(Args&&... args)
+auto make_shared(Args&&... args) -> shared_ptr<typename std::remove_extent_t<T>>
 {
     using element_type = typename std::remove_extent_t<T>;
     return shared_ptr<element_type>(new T {std::forward<Args>(args)...});

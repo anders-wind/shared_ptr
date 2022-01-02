@@ -11,7 +11,8 @@ if(PROJECT_IS_TOP_LEVEL)
   enable_testing()
 endif()
 
-CPMAddPackage("gh:onqtam/doctest#2.4.6")
+CPMAddPackage("gh:onqtam/doctest#2.4.7")
+set_target_properties(doctest PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:doctest,INTERFACE_INCLUDE_DIRECTORIES>)
 
 add_executable(shared_ptr_test 
   source/main_test.cpp 

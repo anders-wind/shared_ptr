@@ -1,6 +1,8 @@
 #pragma once
 
 #include <atomic>
+#include <utility>
+
 #include <pthread.h>  // TODO handle this cross-platform
 
 namespace wind
@@ -15,21 +17,15 @@ struct shared_ptr
     using global_reference_counter_type = int16_t;
 
   private:
-    pthread_key_t key_;
-    std::atomic<global_reference_counter_type>* g_count_;
-    element_type* elem_;
+    pthread_key_t key_ {};
+    std::atomic<global_reference_counter_type>* g_count_ {nullptr};
+    element_type* elem_ {nullptr};
 
   public:
-    shared_ptr() noexcept
-        : key_ {}
-        , g_count_(nullptr)
-        , elem_(nullptr)
-    {
-    }
+    shared_ptr() = default;
 
     explicit shared_ptr(element_type* elem) noexcept
-        : key_ {}
-        , g_count_(new std::atomic<global_reference_counter_type>(0))
+        : g_count_(new std::atomic<global_reference_counter_type>(0))
         , elem_(elem)
     {
         pthread_key_create(&this->key_, nullptr);
@@ -46,8 +42,12 @@ struct shared_ptr
         }
     }
 
-    shared_ptr& operator=(const shared_ptr& other) noexcept
+    auto operator=(const shared_ptr& other) noexcept -> shared_ptr&
     {
+        if (this == &other) {
+            return *this;
+        }
+
         if (this->elem_ != other.elem_) {
             this->decrement_and_maybe_delete();
 
@@ -75,8 +75,12 @@ struct shared_ptr
         }
     }
 
-    shared_ptr& operator=(shared_ptr&& other) noexcept
+    auto operator=(shared_ptr&& other) noexcept -> shared_ptr&
     {
+        if (this == &other) {
+            return *this;
+        }
+
         if (this->elem_ != other.elem_) {
             if (this->g_count_ != nullptr) {
                 this->decrement_and_maybe_delete();
@@ -102,32 +106,32 @@ struct shared_ptr
         this->decrement_and_maybe_delete();
     }
 
-    element_type* get() noexcept
+    [[nodiscard]] auto get() noexcept -> element_type*
     {
         return this->elem_;
     }
 
-    const element_type* get() const noexcept
+    [[nodiscard]] auto get() const noexcept -> const element_type*
     {
         return this->elem_;
     }
 
-    element_type& operator*() noexcept
+    [[nodiscard]] auto operator*() noexcept -> element_type&
     {
         return *this->elem_;
     }
 
-    const element_type& operator*() const noexcept
+    [[nodiscard]] auto operator*() const noexcept -> const element_type&
     {
         return *this->elem_;
     }
 
-    const element_type* operator->() const noexcept
+    [[nodiscard]] auto operator->() const noexcept -> const element_type*
     {
         return this->elem_;
     }
 
-    element_type* operator->() noexcept
+    [[nodiscard]] auto operator->() noexcept -> element_type*
     {
         return this->elem_;
     }
@@ -142,7 +146,7 @@ struct shared_ptr
         this->decrement_and_maybe_delete();
     }
 
-    operator bool() const noexcept
+    explicit operator bool() const noexcept
     {
         return this->elem_ != nullptr;
     }
@@ -155,7 +159,7 @@ struct shared_ptr
     }
 
   private:
-    local_reference_counter_type* get_local_count()
+    auto get_local_count() noexcept -> local_reference_counter_type*
     {
         return static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_));
     }
@@ -163,6 +167,7 @@ struct shared_ptr
     void initialize_if_not_exists(local_reference_counter_type initial_count) noexcept
     {
         if (pthread_getspecific(this->key_) == nullptr) {
+            // NOLINTNEXTLINE
             pthread_setspecific(this->key_, new local_reference_counter_type(initial_count));
             this->g_count_->fetch_add(1);
         }
@@ -180,7 +185,8 @@ struct shared_ptr
             auto count = this->get_local_count();
             if (count != nullptr) {
                 if (--(*count) == 0) {
-                    delete count;
+                    delete count;  // NOLINT(cppcoreguidelines-owning-memory)
+                    // NOLINTNEXTLINE
                     pthread_setspecific(this->key_, nullptr);
                     if (this->g_count_->fetch_sub(1) - 1 == 0) {
                         delete this->g_count_;
@@ -194,7 +200,7 @@ struct shared_ptr
 };
 
 template<typename T, typename... Args>
-auto make_shared(Args&&... args)
+auto make_shared(Args&&... args) -> shared_ptr<typename std::remove_extent_t<T>>
 {
     using element_type = typename std::remove_extent_t<T>;
     return shared_ptr<element_type>(new T {std::forward<Args>(args)...});
