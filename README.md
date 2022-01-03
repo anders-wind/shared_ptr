@@ -31,9 +31,10 @@ Some benchmark graphs from quickbench - the names of the series corrospond to th
 See the [BUILDING](BUILDING.md) document.
 
 But in short:
-```
+```sh
 cmake --preset=dev
-cmake --build build/dev --config Release -j 24; cmake --install build/dev --config Release --prefix prefix
+cmake --build --preset=dev
+ctest --preset=dev
 ```
 
 # Consuming
