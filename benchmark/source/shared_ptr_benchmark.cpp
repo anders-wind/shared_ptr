@@ -36,14 +36,14 @@ template<typename FuncT>
 void copy_and_release_many(int64_t num_iteration, int64_t num_copies, const FuncT& generator)
 {
     using shared_ptr_type = typename std::invoke_result_t<FuncT, int>;
-    constexpr auto number_of_ptrs = 5;
+    constexpr int64_t number_of_ptrs = 5;
 
-    for (auto i = 0; i < num_iteration; i++) {
+    for (int64_t i = 0; i < num_iteration; i++) {
         auto ptrs = std::array<shared_ptr_type, number_of_ptrs> {
             generator(i), generator(i), generator(i), generator(i), generator(i)};
 
-        for (auto j = 0; j < num_copies; j++) {
-            auto copy = ptrs.at(j % static_cast<int>(ptrs.size()));
+        for (int64_t j = 0; j < num_copies; j++) {
+            auto copy = ptrs.at(static_cast<uint64_t>(j) % static_cast<uint64_t>(ptrs.size()));
             benchmark::DoNotOptimize(copy);
         }
     }
@@ -68,14 +68,16 @@ void copy_back_and_forth_between_threads(int64_t num_iteration,
         threads.push_back(std::thread(
             [&ptrs, &num_iteration, &num_copies]()
             {
-                auto local_ptrs = std::vector<shared_ptr_type>(num_copies);
-                auto local_ptrs2 = std::vector<shared_ptr_type>(num_copies);
+                auto local_ptrs = std::vector<shared_ptr_type>(static_cast<size_t>(num_copies));
+                auto local_ptrs2 = std::vector<shared_ptr_type>(static_cast<size_t>(num_copies));
                 // sync_point.arrive_and_wait();
 
-                for (auto i = 0; i < num_iteration; i++) {
-                    local_ptrs.at(i % num_copies) = ptrs.at(i % num_copies);
-                    for (auto j = 0; j < num_copies; j++) {
-                        local_ptrs2.at((i * j) % num_copies) = local_ptrs.at((i + j) % num_copies);
+                for (uint64_t i = 0; i < static_cast<uint64_t>(num_iteration); i++) {
+                    local_ptrs.at(i % static_cast<uint64_t>(num_copies)) =
+                        ptrs.at(i % static_cast<uint64_t>(num_copies));
+                    for (uint64_t j = 0; j < static_cast<uint64_t>(num_copies); j++) {
+                        local_ptrs2.at((i * j) % static_cast<uint64_t>(num_copies)) =
+                            local_ptrs.at((i + j) % static_cast<uint64_t>(num_copies));
                     }
                 }
 
@@ -97,7 +99,7 @@ static void bm_copying_local(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copying(state.range(0), []() { return wind::local::make_shared<int>(42); });
+        copying(state.range(0), []() { return wind::local::make_shared<int64_t>(42); });
     }
 }
 
@@ -105,7 +107,7 @@ static void bm_copying_biased(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copying(state.range(0), []() { return wind::bias::make_shared<int>(42); });
+        copying(state.range(0), []() { return wind::bias::make_shared<int64_t>(42); });
     }
 }
 
@@ -113,7 +115,7 @@ static void bm_copying_std(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copying(state.range(0), []() { return std::make_shared<int>(42); });
+        copying(state.range(0), []() { return std::make_shared<int64_t>(42); });
     }
 }
 
@@ -124,7 +126,7 @@ static void bm_copy_and_release_local(benchmark::State& state)
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_and_release(
-            state.range(0), 128, [](auto i) { return wind::local::make_shared<int>(i * 2); });
+            state.range(0), 128, [](auto i) { return wind::local::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -133,7 +135,7 @@ static void bm_copy_and_release_biased(benchmark::State& state)
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_and_release(
-            state.range(0), 128, [](auto i) { return wind::bias::make_shared<int>(i * 2); });
+            state.range(0), 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -141,7 +143,8 @@ static void bm_copy_and_release_std(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_and_release(state.range(0), 128, [](auto i) { return std::make_shared<int>(i * 2); });
+        copy_and_release(
+            state.range(0), 128, [](auto i) { return std::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -152,7 +155,7 @@ static void bm_copy_and_release_many_local(benchmark::State& state)
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_and_release_many(
-            state.range(0), 128, [](auto i) { return wind::local::make_shared<int>(i * 2); });
+            state.range(0), 128, [](auto i) { return wind::local::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -161,7 +164,7 @@ static void bm_copy_and_release_many_biased(benchmark::State& state)
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_and_release_many(
-            state.range(0), 128, [](auto i) { return wind::bias::make_shared<int>(i * 2); });
+            state.range(0), 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -170,7 +173,7 @@ static void bm_copy_and_release_many_std(benchmark::State& state)
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_and_release_many(
-            state.range(0), 128, [](auto i) { return std::make_shared<int>(i * 2); });
+            state.range(0), 128, [](auto i) { return std::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -181,7 +184,7 @@ static void bm_copy_back_and_forth_between_threads_biased(benchmark::State& stat
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_back_and_forth_between_threads(
-            state.range(0), 128, 8, [](auto i) { return wind::bias::make_shared<int>(i * 2); });
+            state.range(0), 128, 8, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -190,7 +193,7 @@ static void bm_copy_back_and_forth_between_threads_std(benchmark::State& state)
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_back_and_forth_between_threads(
-            state.range(0), 128, 8, [](auto i) { return std::make_shared<int>(i * 2); });
+            state.range(0), 128, 8, [](auto i) { return std::make_shared<int64_t>(i * 2); });
     }
 }
 
