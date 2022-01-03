@@ -179,7 +179,7 @@ struct shared_ptr
         (*this->get_local_count())++;
     }
 
-    void decrement_and_maybe_delete() noexcept
+    void decrement_and_maybe_delete()
     {
         if (this->g_count_ != nullptr) {
             auto count = this->get_local_count();

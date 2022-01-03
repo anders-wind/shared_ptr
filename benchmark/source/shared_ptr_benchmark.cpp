@@ -43,7 +43,7 @@ void copy_and_release_many(int64_t num_iteration, int64_t num_copies, const Func
             generator(i), generator(i), generator(i), generator(i), generator(i)};
 
         for (auto j = 0; j < num_copies; j++) {
-            auto copy = ptrs.at(j % ptrs.size());
+            auto copy = ptrs.at(j % static_cast<int>(ptrs.size()));
             benchmark::DoNotOptimize(copy);
         }
     }
@@ -64,7 +64,7 @@ void copy_back_and_forth_between_threads(int64_t num_iteration,
 
     // std::barrier sync_point(num_threads);
     auto threads = std::vector<std::thread>();
-    for (auto i = 0; i < num_threads; i++) {
+    for (auto t = 0; t < num_threads; t++) {
         threads.push_back(std::thread(
             [&ptrs, &num_iteration, &num_copies]()
             {

@@ -43,6 +43,10 @@ TEST_SUITE("local::shared_ptr")  // NOLINT
     struct deleter_func  // NOLINT
     {
         std::function<void()> delete_func;
+        explicit deleter_func(std::function<void()> func)
+            : delete_func(std::move(func))
+        {
+        }
         ~deleter_func()
         {
             delete_func();

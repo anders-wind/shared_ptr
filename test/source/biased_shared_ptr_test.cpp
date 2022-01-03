@@ -137,28 +137,28 @@ TEST_SUITE("bias::shared_ptr")  // NOLINT
         CHECK(*value1 == 3);
     }
 
-    struct deleter_func  // NOLINT
+    struct deleter_ref
     {
-        bool* was_deleted;
-        ~deleter_func()
+        bool* was_deleted {nullptr};
+        ~deleter_ref()
         {
-            *was_deleted = true;
+            *this->was_deleted = true;
         }
     };
 
     TEST_CASE("bias::shared_ptr: destructor gets")  // NOLINT
     {
-        auto was_called = std::make_unique<bool>(false);
+        auto was_called = false;
         {
-            auto value = wind::bias::make_shared<deleter_func>();
+            auto value = wind::bias::make_shared<deleter_ref>();
 
-            value->was_deleted = was_called.get();
+            value->was_deleted = &was_called;
             {
                 auto copy = value;  // NOLINT
             }
             CHECK(!(*value->was_deleted));
         }
-        CHECK(*was_called.get());
+        CHECK(was_called);
     }
 
     TEST_CASE("bias::shared_ptr: can put into vector")  // NOLINT
