@@ -16,12 +16,11 @@ CPMAddPackage(
   VERSION 1.6.0
   OPTIONS "BENCHMARK_ENABLE_TESTING Off" "BENCHMARK_INSTALL_DOCS Off" "BENCHMARK_ENABLE_INSTALL Off"
 )
-set_target_properties(benchmark PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:benchmark,INTERFACE_INCLUDE_DIRECTORIES>)
 
 add_executable(shared_ptr_benchmark source/shared_ptr_benchmark.cpp)
 
 target_link_libraries(shared_ptr_benchmark 
-  PRIVATE shared_ptr::shared_ptr benchmark::benchmark)
+  PRIVATE wind::shared_ptr benchmark::benchmark)
 
 target_compile_features(shared_ptr_benchmark PRIVATE cxx_std_20)
 

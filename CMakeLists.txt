@@ -10,8 +10,6 @@ project(
     LANGUAGES CXX
 )
 
-docs_early_return()
-
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
 include(cmake/CPM.cmake)
@@ -24,7 +22,7 @@ find_package(Threads REQUIRED)
 # ---- Declare library ----
 
 add_library(shared_ptr_shared_ptr INTERFACE)
-add_library(shared_ptr::shared_ptr ALIAS shared_ptr_shared_ptr)
+add_library(wind::shared_ptr ALIAS shared_ptr_shared_ptr)
 
 set_property(
     TARGET shared_ptr_shared_ptr PROPERTY
@@ -46,15 +44,6 @@ target_link_libraries(shared_ptr_shared_ptr INTERFACE Threads::Threads)
 if(NOT CMAKE_SKIP_INSTALL_RULES)
   include(cmake/install-rules.cmake)
 endif()
-
-# # ---- Examples ----
-
-# if(PROJECT_IS_TOP_LEVEL)
-#   option(BUILD_EXAMPLES "Build examples tree." "${shared_ptr_DEVELOPER_MODE}")
-#   if(BUILD_EXAMPLES)
-#     add_subdirectory(example)
-#   endif()
-# endif()
 
 # ---- Developer mode ----
 

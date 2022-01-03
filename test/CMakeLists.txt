@@ -12,7 +12,6 @@ if(PROJECT_IS_TOP_LEVEL)
 endif()
 
 CPMAddPackage("gh:onqtam/doctest#2.4.7")
-set_target_properties(doctest PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:doctest,INTERFACE_INCLUDE_DIRECTORIES>)
 
 add_executable(shared_ptr_test 
   source/main_test.cpp 
@@ -20,7 +19,7 @@ add_executable(shared_ptr_test
   source/biased_shared_ptr_test.cpp)
 
 target_link_libraries(shared_ptr_test 
-  PRIVATE shared_ptr::shared_ptr doctest::doctest)
+  PRIVATE wind::shared_ptr doctest::doctest)
 
 target_compile_features(shared_ptr_test PRIVATE cxx_std_20)
 

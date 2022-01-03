@@ -21,10 +21,10 @@ All of the experiments have been run on https://www.quick-bench.com and using th
 
 Some benchmark graphs from quickbench - the names of the series corrospond to the specific benchmark:
 
-![](results/copying_local.png)
-![](results/copy_and_release_local.png)
-![](results/copy_and_release_many.png)
-![](results/copy_back_and_forth_between_threads.png)
+![](assets/copying_local.png)
+![](assets/copy_and_release_local.png)
+![](assets/copy_and_release_many.png)
+![](assets/copy_back_and_forth_between_threads.png)
 
 # Building and installing
 
@@ -35,6 +35,18 @@ But in short:
 cmake --preset=dev
 cmake --build build/dev --config Release -j 24; cmake --install build/dev --config Release --prefix prefix
 ```
+
+# Consuming
+
+Use [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake)
+
+```
+CPMAddPackage(
+  NAME benchmark
+  GITHUB_REPOSITORY anders-wind/shared_ptr
+)
+```
+This creates the cmake target: `wind::shared_ptr` which you can add in your `target_link_libraries`. Then you can add `include <shared_ptr/bias_shared_ptr.hpp>` or `include <shared_ptr/local_shared_ptr.hpp>`
 
 # Contributing
 
