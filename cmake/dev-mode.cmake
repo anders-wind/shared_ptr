@@ -1,10 +1,13 @@
 include(cmake/folders.cmake)
 
 include(CTest)
+
+option(BUILD_TESTING "Build tests" OFF)
 if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
+option(BUILD_BENCHMARK "Build benchmarks" OFF)
 if(BUILD_BENCHMARK)
   add_subdirectory(benchmark)
 endif()

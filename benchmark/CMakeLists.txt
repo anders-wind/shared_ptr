@@ -16,6 +16,7 @@ CPMAddPackage(
   VERSION 1.6.0
   OPTIONS "BENCHMARK_ENABLE_TESTING Off" "BENCHMARK_INSTALL_DOCS Off" "BENCHMARK_ENABLE_INSTALL Off"
 )
+set_target_properties(benchmark PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:benchmark,INTERFACE_INCLUDE_DIRECTORIES>)
 
 add_executable(shared_ptr_benchmark source/shared_ptr_benchmark.cpp)
 

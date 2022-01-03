@@ -12,10 +12,13 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "cmake --build build/dev --config Release -j 24; cmake --install build/dev --config Release --prefix prefix",
-            "problemMatcher": [
-                "$msCompile"
-            ],
+            "command": "cmake --build --preset=dev -j 24",
+            "group": "build",
+        },
+        {
+            "label": "install",
+            "type": "shell",
+            "command": "cmake --install --preset=dev --prefix prefix",
             "group": "build",
         },
         {
@@ -23,7 +26,8 @@
             "type": "shell",
             "dependsOn": [
                 "init",
-                "build"
+                "build",
+                "install"
             ],
             "dependsOrder": "sequence",
             "group": "build",
@@ -31,7 +35,7 @@
         {
             "label": "test",
             "type": "shell",
-            "command": "cd build/dev && ctest -C Release -j 24 --output-on-failure",
+            "command": "ctest --preset=dev",
             "group": "test"
         },
         {

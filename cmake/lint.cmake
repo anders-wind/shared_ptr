@@ -12,7 +12,7 @@ default(
     source/*.cpp source/*.hpp
     include/*.hpp
     test/*.cpp test/*.hpp
-    example/*.cpp example/*.hpp
+    benchmark/*.cpp benchmark/*.hpp
 )
 default(FIX NO)
 
