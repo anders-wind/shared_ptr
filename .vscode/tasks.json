@@ -18,7 +18,7 @@
         {
             "label": "install",
             "type": "shell",
-            "command": "cmake --install --preset=dev --prefix prefix",
+            "command": "cmake --install build/dev --prefix prefix",
             "group": "build",
         },
         {
