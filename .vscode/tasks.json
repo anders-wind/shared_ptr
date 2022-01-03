@@ -41,7 +41,7 @@
         {
             "label": "clean",
             "type": "shell",
-            "command": "rmdir -r -fo build; rmdir -r -fo prefix",
+            "command": "rm -rf build; rm -rf prefix",
             "group": "build"
         }
     ]

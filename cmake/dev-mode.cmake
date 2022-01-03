@@ -2,13 +2,13 @@ include(cmake/folders.cmake)
 
 include(CTest)
 
-option(BUILD_TESTING "Build tests" OFF)
-if(BUILD_TESTING)
+option(shared_ptr_BUILD_TESTING "Build tests" OFF)
+if(BUILD_TESTING AND shared_ptr_BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
-option(BUILD_BENCHMARK "Build benchmarks" OFF)
-if(BUILD_BENCHMARK)
+option(shared_ptr_BUILD_BENCHMARK "Build benchmarks" OFF)
+if(shared_ptr_BUILD_BENCHMARK)
   add_subdirectory(benchmark)
 endif()
 

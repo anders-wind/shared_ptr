@@ -27,7 +27,8 @@
       "inherits": "cmake-pedantic",
       "cacheVariables": {
         "shared_ptr_DEVELOPER_MODE": "ON",
-        "BUILD_BENCHMARK": "ON"
+        "shared_ptr_BUILD_BENCHMARK": "ON",
+        "shared_ptr_BUILD_TESTING": "ON"
       }
     },
     {
