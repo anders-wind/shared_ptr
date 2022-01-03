@@ -19,6 +19,7 @@
 	"settings": {},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
+		"eamodio.gitlens",
 		"matepek.vscode-catch2-test-adapter",
 		"ms-vscode.cpptools-extension-pack",
 		"ms-vscode.cpptools",
