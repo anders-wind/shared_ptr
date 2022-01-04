@@ -57,8 +57,7 @@ TEST_SUITE("local::shared_ptr")  // NOLINT
     {
         bool was_called = false;
         {
-            auto ptr =
-                wind::local::make_shared<deleter_func>([&was_called]() { was_called = true; });
+            auto ptr = wind::local::make_shared<deleter_func>([&was_called]() { was_called = true; });
         }
         CHECK(was_called);
     }
@@ -67,8 +66,7 @@ TEST_SUITE("local::shared_ptr")  // NOLINT
     {
         bool was_called = false;
         {
-            auto ptr =
-                wind::local::make_shared<deleter_func>([&was_called]() { was_called = true; });
+            auto ptr = wind::local::make_shared<deleter_func>([&was_called]() { was_called = true; });
             auto copy = ptr;  // NOLINT
         }
         CHECK(was_called);
@@ -78,8 +76,7 @@ TEST_SUITE("local::shared_ptr")  // NOLINT
     {
         bool was_called = false;
         {
-            auto ptr =
-                wind::local::make_shared<deleter_func>([&was_called]() { was_called = true; });
+            auto ptr = wind::local::make_shared<deleter_func>([&was_called]() { was_called = true; });
             {
                 auto copy = ptr;  // NOLINT
             }
