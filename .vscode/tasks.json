@@ -6,19 +6,19 @@
         {
             "label": "init",
             "type": "shell",
-            "command": "cmake --preset=dev",
+            "command": "cmake --preset=dev-sanitize",
             "group": "build",
         },
         {
             "label": "build",
             "type": "shell",
-            "command": "cmake --build --preset=dev -j 24",
+            "command": "cmake --build --preset=dev-sanitize",
             "group": "build",
         },
         {
             "label": "install",
             "type": "shell",
-            "command": "cmake --install build/dev --prefix prefix",
+            "command": "cmake --install build/dev-sanitize --prefix prefix",
             "group": "build",
         },
         {
@@ -35,7 +35,7 @@
         {
             "label": "test",
             "type": "shell",
-            "command": "ctest --preset=dev",
+            "command": "ctest --preset=dev-sanitize",
             "group": "test"
         },
         {
