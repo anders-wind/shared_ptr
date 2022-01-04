@@ -21,10 +21,11 @@ All of the experiments have been run on https://www.quick-bench.com and using th
 
 Some benchmark graphs from quickbench - the names of the series corrospond to the specific benchmark:
 
-![](assets/copying_local.png)
-![](assets/copy_and_release_local.png)
+![](assets/copying.png)
+![](assets/copy_and_release.png)
 ![](assets/copy_and_release_many.png)
-![](assets/copy_back_and_forth_between_threads.png)
+![](assets/copy_back_and_forth_between_threads_many_threads_many_copies.png)
+![](assets/copy_back_and_forth_between_threads_many_threads_few_copies.png)
 
 # Building and installing
 
