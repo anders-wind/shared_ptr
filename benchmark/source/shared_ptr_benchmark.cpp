@@ -127,8 +127,7 @@ static void bm_copy_and_release_local(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_and_release(
-            state.range(0), 128, [](auto i) { return wind::local::make_shared<int64_t>(i * 2); });
+        copy_and_release(state.range(0), 128, [](auto i) { return wind::local::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -136,8 +135,7 @@ static void bm_copy_and_release_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_and_release(
-            state.range(0), 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+        copy_and_release(state.range(0), 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -145,8 +143,7 @@ static void bm_copy_and_release_std(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_and_release(
-            state.range(0), 128, [](auto i) { return std::make_shared<int64_t>(i * 2); });
+        copy_and_release(state.range(0), 128, [](auto i) { return std::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -156,8 +153,7 @@ static void bm_copy_and_release_many_local(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_and_release_many(
-            state.range(0), 128, [](auto i) { return wind::local::make_shared<int64_t>(i * 2); });
+        copy_and_release_many(state.range(0), 128, [](auto i) { return wind::local::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -165,8 +161,7 @@ static void bm_copy_and_release_many_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_and_release_many(
-            state.range(0), 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+        copy_and_release_many(state.range(0), 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -174,28 +169,22 @@ static void bm_copy_and_release_many_std(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_and_release_many(
-            state.range(0), 128, [](auto i) { return std::make_shared<int64_t>(i * 2); });
+        copy_and_release_many(state.range(0), 128, [](auto i) { return std::make_shared<int64_t>(i * 2); });
     }
 }
 
 // ===== copy_back_and_forth_between_threads =====
 
-static void bm_copy_back_and_forth_between_threads_many_threads_many_copies_bias(
-    benchmark::State& state)
+static void bm_copy_back_and_forth_between_threads_many_threads_many_copies_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_back_and_forth_between_threads(state.range(0),
-                                            128,
-                                            128,
-                                            [](auto i)
-                                            { return wind::bias::make_shared<int64_t>(i * 2); });
+        copy_back_and_forth_between_threads(
+            state.range(0), 128, 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
     }
 }
 
-static void bm_copy_back_and_forth_between_threads_many_threads_many_copies_std(
-    benchmark::State& state)
+static void bm_copy_back_and_forth_between_threads_many_threads_many_copies_std(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
@@ -204,8 +193,7 @@ static void bm_copy_back_and_forth_between_threads_many_threads_many_copies_std(
     }
 }
 
-static void bm_copy_back_and_forth_between_threads_many_threads_few_copies_bias(
-    benchmark::State& state)
+static void bm_copy_back_and_forth_between_threads_many_threads_few_copies_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
@@ -214,8 +202,7 @@ static void bm_copy_back_and_forth_between_threads_many_threads_few_copies_bias(
     }
 }
 
-static void bm_copy_back_and_forth_between_threads_many_threads_few_copies_std(
-    benchmark::State& state)
+static void bm_copy_back_and_forth_between_threads_many_threads_few_copies_std(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {

@@ -14,22 +14,24 @@ struct shared_ptr
 {
     using element_type = typename std::remove_extent_t<T>;
     using local_reference_counter_type = size_t;
-    using global_reference_counter_type = int16_t;
+    using global_reference_counter_type = size_t;
 
   private:
     pthread_key_t key_ {};
     std::atomic<global_reference_counter_type>* g_count_ {nullptr};
+    local_reference_counter_type* local_counter_ {nullptr};
     element_type* elem_ {nullptr};
 
   public:
     shared_ptr() = default;
 
     explicit shared_ptr(element_type* elem) noexcept
-        : g_count_(new std::atomic<global_reference_counter_type>(0))
+        : g_count_(new std::atomic<global_reference_counter_type>(1))
+        , local_counter_(new local_reference_counter_type(1))
         , elem_(elem)
     {
         pthread_key_create(&this->key_, nullptr);
-        this->initialize_if_not_exists(1);
+        pthread_setspecific(this->key_, this->local_counter_);
     }
 
     shared_ptr(const shared_ptr& other) noexcept
@@ -159,16 +161,13 @@ struct shared_ptr
     }
 
   private:
-    auto get_local_count() noexcept -> local_reference_counter_type*
-    {
-        return static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_));
-    }
-
     void initialize_if_not_exists(local_reference_counter_type initial_count) noexcept
     {
-        if (pthread_getspecific(this->key_) == nullptr) {
-            // NOLINTNEXTLINE
-            pthread_setspecific(this->key_, new local_reference_counter_type(initial_count));
+        // NOLINTNEXTLINE
+        this->local_counter_ = static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_));
+        if (this->local_counter_ == nullptr) {
+            this->local_counter_ = new local_reference_counter_type(initial_count);
+            pthread_setspecific(this->key_, this->local_counter_);
             this->g_count_->fetch_add(1);
         }
     }
@@ -176,23 +175,19 @@ struct shared_ptr
     void increment_and_initialize_if_not_exists() noexcept
     {
         this->initialize_if_not_exists(0);
-        (*this->get_local_count())++;
+        (*this->local_counter_)++;
     }
 
     void decrement_and_maybe_delete()
     {
-        if (this->g_count_ != nullptr) {
-            auto count = this->get_local_count();
-            if (count != nullptr) {
-                if (--(*count) == 0) {
-                    delete count;  // NOLINT(cppcoreguidelines-owning-memory)
-                    // NOLINTNEXTLINE
-                    pthread_setspecific(this->key_, nullptr);
-                    if (this->g_count_->fetch_sub(1) - 1 == 0) {
-                        delete this->g_count_;
-                        delete this->elem_;
-                        pthread_key_delete(this->key_);
-                    }
+        if (this->g_count_ != nullptr && this->local_counter_ != nullptr) {
+            if (--(*this->local_counter_) == 0) {
+                delete this->local_counter_;  // NOLINT(cppcoreguidelines-owning-memory)
+                // NOLINTNEXTLINE
+                if (this->g_count_->fetch_sub(1) - 1 == 0) {
+                    delete this->g_count_;
+                    delete this->elem_;
+                    pthread_key_delete(this->key_);
                 }
             }
         }
