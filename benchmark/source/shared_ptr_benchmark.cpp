@@ -36,11 +36,13 @@ template<typename FuncT>
 void copy_and_release_many(int64_t num_iteration, int64_t num_copies, const FuncT& generator)
 {
     using shared_ptr_type = typename std::invoke_result_t<FuncT, int>;
-    constexpr int64_t number_of_ptrs = 5;
+    constexpr int64_t number_of_ptrs = 32;
 
     for (int64_t i = 0; i < num_iteration; i++) {
-        auto ptrs = std::array<shared_ptr_type, number_of_ptrs> {
-            generator(i), generator(i), generator(i), generator(i), generator(i)};
+        auto ptrs = std::array<shared_ptr_type, number_of_ptrs> {};
+        for (auto ptr_i = 0; ptr_i < number_of_ptrs; ptr_i++) {
+            ptrs.at(ptr_i) = generator(i);
+        }
 
         for (int64_t j = 0; j < num_copies; j++) {
             auto copy = ptrs.at(static_cast<uint64_t>(j) % static_cast<uint64_t>(ptrs.size()));
@@ -103,7 +105,7 @@ static void bm_copying_local(benchmark::State& state)
     }
 }
 
-static void bm_copying_biased(benchmark::State& state)
+static void bm_copying_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
@@ -130,7 +132,7 @@ static void bm_copy_and_release_local(benchmark::State& state)
     }
 }
 
-static void bm_copy_and_release_biased(benchmark::State& state)
+static void bm_copy_and_release_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
@@ -159,7 +161,7 @@ static void bm_copy_and_release_many_local(benchmark::State& state)
     }
 }
 
-static void bm_copy_and_release_many_biased(benchmark::State& state)
+static void bm_copy_and_release_many_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
@@ -179,44 +181,76 @@ static void bm_copy_and_release_many_std(benchmark::State& state)
 
 // ===== copy_back_and_forth_between_threads =====
 
-static void bm_copy_back_and_forth_between_threads_biased(benchmark::State& state)
+static void bm_copy_back_and_forth_between_threads_many_threads_many_copies_bias(
+    benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_back_and_forth_between_threads(
-            state.range(0), 128, 8, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+        copy_back_and_forth_between_threads(state.range(0),
+                                            128,
+                                            128,
+                                            [](auto i)
+                                            { return wind::bias::make_shared<int64_t>(i * 2); });
     }
 }
 
-static void bm_copy_back_and_forth_between_threads_std(benchmark::State& state)
+static void bm_copy_back_and_forth_between_threads_many_threads_many_copies_std(
+    benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_back_and_forth_between_threads(
-            state.range(0), 128, 8, [](auto i) { return std::make_shared<int64_t>(i * 2); });
+            state.range(0), 128, 128, [](auto i) { return std::make_shared<int64_t>(i * 2); });
+    }
+}
+
+static void bm_copy_back_and_forth_between_threads_many_threads_few_copies_bias(
+    benchmark::State& state)
+{
+    // NOLINTNEXTLINE
+    for (auto _ : state) {
+        copy_back_and_forth_between_threads(
+            state.range(0), 2, 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+    }
+}
+
+static void bm_copy_back_and_forth_between_threads_many_threads_few_copies_std(
+    benchmark::State& state)
+{
+    // NOLINTNEXTLINE
+    for (auto _ : state) {
+        copy_back_and_forth_between_threads(
+            state.range(0), 2, 128, [](auto i) { return std::make_shared<int64_t>(i * 2); });
     }
 }
 
 // Register benchmarks
 
-BENCHMARK(bm_copying_local)->Range(1 << 4, 1 << 8);  // NOLINT
-BENCHMARK(bm_copying_biased)->Range(1 << 4, 1 << 8);  // NOLINT
-BENCHMARK(bm_copying_std)->Range(1 << 4, 1 << 8);  // NOLINT
+BENCHMARK(bm_copying_local)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+BENCHMARK(bm_copying_bias)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+BENCHMARK(bm_copying_std)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 
-BENCHMARK(bm_copy_and_release_local)->Range(1 << 9, 8 << 10);  // NOLINT
-BENCHMARK(bm_copy_and_release_biased)->Range(1 << 9, 8 << 10);  // NOLINT
-BENCHMARK(bm_copy_and_release_std)->Range(1 << 9, 8 << 10);  // NOLINT
+BENCHMARK(bm_copy_and_release_local)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+BENCHMARK(bm_copy_and_release_bias)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+BENCHMARK(bm_copy_and_release_std)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 
-BENCHMARK(bm_copy_and_release_many_local)->Range(1 << 9, 8 << 10);  // NOLINT
-BENCHMARK(bm_copy_and_release_many_biased)->Range(1 << 9, 8 << 10);  // NOLINT
-BENCHMARK(bm_copy_and_release_many_std)->Range(1 << 9, 8 << 10);  // NOLINT
+BENCHMARK(bm_copy_and_release_many_local)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+BENCHMARK(bm_copy_and_release_many_bias)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+BENCHMARK(bm_copy_and_release_many_std)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 
 // local ofcourse does not work
-BENCHMARK(bm_copy_back_and_forth_between_threads_biased)  // NOLINT
+BENCHMARK(bm_copy_back_and_forth_between_threads_many_threads_many_copies_bias)  // NOLINT
     ->RangeMultiplier(2)
-    ->Range(1 << 8, 1 << 11);
-BENCHMARK(bm_copy_back_and_forth_between_threads_std)  // NOLINT
+    ->Range(1 << 4, 1 << 12);
+BENCHMARK(bm_copy_back_and_forth_between_threads_many_threads_many_copies_std)  // NOLINT
     ->RangeMultiplier(2)
-    ->Range(1 << 8, 1 << 11);
+    ->Range(1 << 4, 1 << 12);
+
+BENCHMARK(bm_copy_back_and_forth_between_threads_many_threads_few_copies_bias)  // NOLINT
+    ->RangeMultiplier(2)
+    ->Range(1 << 4, 1 << 12);
+BENCHMARK(bm_copy_back_and_forth_between_threads_many_threads_few_copies_std)  // NOLINT
+    ->RangeMultiplier(2)
+    ->Range(1 << 4, 1 << 12);
 
 BENCHMARK_MAIN();  // NOLINT
