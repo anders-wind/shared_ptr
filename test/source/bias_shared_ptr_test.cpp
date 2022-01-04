@@ -137,6 +137,7 @@ TEST_SUITE("bias::shared_ptr")  // NOLINT
         CHECK(*value1 == 3);
     }
 
+    // NOLINTNEXTLINE
     struct deleter_ref
     {
         bool* was_deleted {nullptr};
