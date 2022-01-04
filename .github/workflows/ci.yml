@@ -52,14 +52,14 @@ jobs:
       run: cmake --preset=ci-coverage
 
     - name: Build
-      run: cmake --build build/coverage -j 2
+      run: cmake --build --preset=ci-coverage -j 2
 
     - name: Test
       working-directory: build/coverage
       run: ctest --output-on-failure -j 2
 
     - name: Process coverage info
-      run: cmake --build build/coverage -t coverage
+      run: cmake --build --preset=ci-coverage -t coverage
 
     - name: Submit to codecov.io
       uses: codecov/codecov-action@v1
@@ -79,7 +79,7 @@ jobs:
       run: cmake --preset=ci-sanitize
 
     - name: Build
-      run: cmake --build build/sanitize -j 2
+      run: cmake --build --preset=ci-sanitize -j 2
 
     - name: Test
       working-directory: build/sanitize
@@ -112,10 +112,10 @@ jobs:
       run: cmake --preset=ci-${{ matrix.os }}
 
     - name: Build
-      run: cmake --build build --config Release -j 2
+      run: cmake --build --preset=ci-${{ matrix.os }} -j 2
 
     - name: Install
-      run: cmake --install build --config Release --prefix prefix
+      run: cmake --install build --prefix prefix
 
     - name: Test
       working-directory: build

@@ -164,5 +164,72 @@
         "dev-mode"
       ]
     }
+  ],
+  "buildPresets": [
+    {
+      "name": "ci-macos",
+      "configurePreset": "ci-macos",
+      "configuration": "Release",
+      "jobs": 24
+    },
+    {
+      "name": "ci-ubuntu",
+      "configurePreset": "ci-ubuntu",
+      "configuration": "Release",
+      "jobs": 24
+    },
+    {
+      "name": "ci-windows",
+      "configurePreset": "ci-windows",
+      "configuration": "Release",
+      "jobs": 24
+    },
+    {
+      "name": "ci-sanitize",
+      "configurePreset": "ci-sanitize",
+      "configuration": "Sanitize",
+      "jobs": 24
+    },
+    {
+      "name": "ci-coverage",
+      "configurePreset": "ci-coverage",
+      "configuration": "Coverage",
+      "jobs": 24
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ci-build",
+      "configurePreset": "ci-build",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "jobs": 24
+      }
+    },
+    {
+      "name": "ci-sanitize",
+      "configurePreset": "ci-sanitize",
+      "configuration": "Sanitize",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "jobs": 24
+      }
+    },
+    {
+      "name": "ci-coverage",
+      "configurePreset": "ci-coverage",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "jobs": 24
+      }
+    }
   ]
 }
