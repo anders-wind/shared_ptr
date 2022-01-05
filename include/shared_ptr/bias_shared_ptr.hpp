@@ -17,6 +17,7 @@ struct shared_ptr
     using global_reference_counter_type = size_t;
 
   private:
+    pthread_t thread_id_ {pthread_self()};
     pthread_key_t key_ {};
     std::atomic<global_reference_counter_type>* g_count_ {nullptr};
     local_reference_counter_type* local_counter_ {nullptr};
@@ -40,7 +41,12 @@ struct shared_ptr
         , elem_(other.elem_)
     {
         if (this->g_count_ != nullptr) {
-            this->increment_and_initialize_if_not_exists();
+            if (other.thread_id_ != this->thread_id_) {
+                this->initialize_if_not_exists(0);
+            } else {
+                this->local_counter_ = other.local_counter_;
+            }
+            (*this->local_counter_)++;
         }
     }
 
@@ -58,7 +64,12 @@ struct shared_ptr
             this->g_count_ = other.g_count_;
 
             if (this->g_count_ != nullptr) {
-                this->increment_and_initialize_if_not_exists();
+                if (other.thread_id_ != this->thread_id_) {
+                    this->initialize_if_not_exists(0);
+                } else {
+                    this->local_counter_ = other.local_counter_;
+                }
+                (*this->local_counter_)++;
             }
         }
 
@@ -73,7 +84,11 @@ struct shared_ptr
         other.g_count_ = nullptr;
         other.elem_ = nullptr;
         if (this->g_count_ != nullptr) {
-            this->initialize_if_not_exists(1);
+            if (other.thread_id_ != this->thread_id_) {
+                this->initialize_if_not_exists(1);
+            } else {
+                this->local_counter_ = other.local_counter_;
+            }
         }
     }
 
@@ -93,7 +108,11 @@ struct shared_ptr
             this->g_count_ = std::move(other.g_count_);
 
             if (this->g_count_ != nullptr) {
-                this->initialize_if_not_exists(1);
+                if (other.thread_id_ != this->thread_id_) {
+                    this->initialize_if_not_exists(1);
+                } else {
+                    this->local_counter_ = other.local_counter_;
+                }
             }
         }
 
@@ -170,12 +189,6 @@ struct shared_ptr
             pthread_setspecific(this->key_, this->local_counter_);
             this->g_count_->fetch_add(1);
         }
-    }
-
-    void increment_and_initialize_if_not_exists() noexcept
-    {
-        this->initialize_if_not_exists(0);
-        (*this->local_counter_)++;
     }
 
     void decrement_and_maybe_delete()

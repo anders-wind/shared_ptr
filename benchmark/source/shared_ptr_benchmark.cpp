@@ -36,7 +36,7 @@ template<typename FuncT>
 void copy_and_release_many(int64_t num_iteration, int64_t num_copies, const FuncT& generator)
 {
     using shared_ptr_type = typename std::invoke_result_t<FuncT, int>;
-    constexpr int64_t number_of_ptrs = 32;
+    constexpr int64_t number_of_ptrs = 64;
 
     for (int64_t i = 0; i < num_iteration; i++) {
         auto ptrs = std::array<shared_ptr_type, number_of_ptrs> {};
