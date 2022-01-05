@@ -4,7 +4,7 @@ include(cmake/prelude.cmake)
 
 project(
     shared_ptr
-    VERSION 0.1.0
+    VERSION 0.1.1
     DESCRIPTION "Shared pointer experiments"
     HOMEPAGE_URL "https://example.com/"
     LANGUAGES CXX
