@@ -120,3 +120,8 @@ jobs:
     - name: Test
       working-directory: build
       run: ctest --output-on-failure -C Release -j 2
+
+    - name: Benchmarks
+      if: matrix.os == 'ubuntu'
+      working-directory: build
+      run: ./benchmark/shared_ptr_benchmark
