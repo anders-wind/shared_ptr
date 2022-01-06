@@ -52,6 +52,18 @@ void copy_and_release_many(int64_t num_iteration, int64_t num_copies, const Func
 }
 
 template<typename FuncT>
+void push_continuously_to_vector(int64_t num_iteration, const FuncT& generator)
+{
+    using shared_ptr_type = typename std::invoke_result_t<FuncT, int>;
+
+    auto ptrs = std::vector<shared_ptr_type>();
+    for (int64_t i = 0; i < num_iteration; i++) {
+        ptrs.push_back(generator(i));
+    }
+    benchmark::DoNotOptimize(ptrs);
+}
+
+template<typename FuncT>
 void copy_back_and_forth_between_threads(int64_t num_iteration,
                                          int64_t num_copies,
                                          int64_t num_threads,
@@ -173,6 +185,32 @@ static void bm_copy_and_release_many_std(benchmark::State& state)
     }
 }
 
+// =====  push_continuously_to_vector =====
+
+static void bm_push_continuously_to_vector_local(benchmark::State& state)
+{
+    // NOLINTNEXTLINE
+    for (auto _ : state) {
+        push_continuously_to_vector(state.range(0), [](auto i) { return wind::local::make_shared<int64_t>(i * 2); });
+    }
+}
+
+static void bm_push_continuously_to_vector_bias(benchmark::State& state)
+{
+    // NOLINTNEXTLINE
+    for (auto _ : state) {
+        push_continuously_to_vector(state.range(0), [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+    }
+}
+
+static void bm_push_continuously_to_vector_std(benchmark::State& state)
+{
+    // NOLINTNEXTLINE
+    for (auto _ : state) {
+        push_continuously_to_vector(state.range(0), [](auto i) { return std::make_shared<int64_t>(i * 2); });
+    }
+}
+
 // ===== copy_back_and_forth_between_threads =====
 
 static void bm_copy_back_and_forth_between_threads_many_threads_many_copies_bias(benchmark::State& state)
@@ -224,6 +262,10 @@ BENCHMARK(bm_copy_and_release_std)->RangeMultiplier(2)->Range(1 << 4, 1 << 12); 
 BENCHMARK(bm_copy_and_release_many_local)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 BENCHMARK(bm_copy_and_release_many_bias)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 BENCHMARK(bm_copy_and_release_many_std)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+
+BENCHMARK(bm_push_continuously_to_vector_bias)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+BENCHMARK(bm_push_continuously_to_vector_local)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+BENCHMARK(bm_push_continuously_to_vector_std)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 
 // local ofcourse does not work
 BENCHMARK(bm_copy_back_and_forth_between_threads_many_threads_many_copies_bias)  // NOLINT
