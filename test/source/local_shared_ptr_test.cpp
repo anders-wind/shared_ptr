@@ -37,7 +37,7 @@ TEST_SUITE("local::shared_ptr")  // NOLINT
             CHECK(out_copy.get_count() == 2);
         }
         CHECK(out_copy.get_count() == 1);
-        CHECK(*out_copy.data == 42);
+        CHECK(*out_copy == 42);
     }
 
     struct deleter_func  // NOLINT
