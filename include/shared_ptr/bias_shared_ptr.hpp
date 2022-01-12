@@ -185,7 +185,7 @@ struct shared_ptr
         // NOLINTNEXTLINE
         this->local_counter_ = static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_));
         if (this->local_counter_ == nullptr) {
-            this->local_counter_ = new local_reference_counter_type(initial_count);
+            this->local_counter_ = new local_reference_counter_type(initial_count);  // NOLINT
             pthread_setspecific(this->key_, this->local_counter_);
             this->g_count_->fetch_add(1);
         }

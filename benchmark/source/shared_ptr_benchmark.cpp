@@ -263,8 +263,8 @@ BENCHMARK(bm_copy_and_release_many_local)->RangeMultiplier(2)->Range(1 << 4, 1 <
 BENCHMARK(bm_copy_and_release_many_bias)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 BENCHMARK(bm_copy_and_release_many_std)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 
-BENCHMARK(bm_push_continuously_to_vector_bias)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 BENCHMARK(bm_push_continuously_to_vector_local)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
+BENCHMARK(bm_push_continuously_to_vector_bias)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 BENCHMARK(bm_push_continuously_to_vector_std)->RangeMultiplier(2)->Range(1 << 4, 1 << 12);  // NOLINT
 
 // local ofcourse does not work
