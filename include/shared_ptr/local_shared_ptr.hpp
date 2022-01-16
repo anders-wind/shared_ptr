@@ -4,10 +4,8 @@
 
 namespace wind::local
 {
-
 namespace detail
 {
-
 template<typename T>
 struct control_block
 {
