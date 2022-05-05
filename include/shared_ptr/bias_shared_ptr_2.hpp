@@ -24,7 +24,7 @@ struct control_block
     auto operator=(const control_block& other) noexcept -> control_block& = default;
     auto operator=(control_block&& other) noexcept -> control_block& = default;
 
-    virtual ~control_block() = default;
+    virtual ~control_block() noexcept = default;
 
     void inc_global()
     {
@@ -57,6 +57,11 @@ struct control_block_with_data : control_block<T>
         , val {std::forward<Args>(args)...}
     {
     }
+    control_block_with_data(const control_block_with_data& other) noexcept = default;
+    control_block_with_data(control_block_with_data&& other) noexcept = default;
+    auto operator=(const control_block_with_data& other) noexcept -> control_block_with_data& = default;
+    auto operator=(control_block_with_data&& other) noexcept -> control_block_with_data& = default;
+    ~control_block_with_data() noexcept override = default;
 };
 
 template<typename T, typename DeleterF>
@@ -165,10 +170,14 @@ struct shared_ptr
             return *this;
         }
 
-        this->decrement_and_maybe_delete();
-        this->control_block_ = other.control_block_;
-        this->key_ = other.key_;
-        this->delete_counter_ = other.delete_counter_;
+        if (this->control_block_ != other.control_block_) {
+            this->decrement_and_maybe_delete();
+            this->control_block_ = other.control_block_;
+            this->key_ = other.key_;
+            this->delete_counter_ = other.delete_counter_;
+        } else {
+            other.decrement_and_maybe_delete();
+        }
 
         other.control_block_ = nullptr;
         return *this;
@@ -286,7 +295,7 @@ auto make_shared(Args&&... args) -> shared_ptr<typename std::remove_extent_t<T>>
 {
     using element_type = typename std::remove_extent_t<T>;
 
-    return shared_ptr<element_type> {detail::new_control_block_with_data<element_type>(std::forward<Args>(args)...)};
+    return shared_ptr<element_type>(detail::new_control_block_with_data<element_type>(std::forward<Args>(args)...));
 }
 
 }  // namespace wind::bias_2

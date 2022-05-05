@@ -186,9 +186,32 @@ TEST_SUITE("bias::shared_ptr")  // NOLINT
         CHECK(*ptr == 3);
     }
 
-    TEST_CASE("local::shared_ptr: copying a nullptr is okay")
+    TEST_CASE("bias::shared_ptr: copying a nullptr is okay")
     {
         auto empty = wind::bias_2::shared_ptr<int>();
         auto copy = empty;  // NOLINT
+    }
+
+    TEST_CASE("bias::shared_ptr: push_back on vector")
+    {
+        auto ptrs = std::vector<wind::bias_2::shared_ptr<int>>();
+        const auto number_of_push_backs_until_resize = 1024;
+        for (int64_t i = 0; i < number_of_push_backs_until_resize - 1; i++) {
+            ptrs.push_back(wind::bias_2::make_shared<int>(static_cast<int>(42 * i)));
+        }
+        ptrs.push_back(wind::bias_2::make_shared<int>(static_cast<int>(0)));
+        CHECK(ptrs.size() == number_of_push_backs_until_resize);
+    }
+
+    TEST_CASE("bias::shared_ptr: push_back same elem on vector")
+    {
+        auto ptr = wind::bias_2::make_shared<int>(static_cast<int>(42));
+        auto ptrs = std::vector<wind::bias_2::shared_ptr<int>>();
+        const auto number_of_push_backs_until_resize = 1024;
+        for (int64_t i = 0; i < number_of_push_backs_until_resize - 1; i++) {
+            ptrs.push_back(ptr);
+        }
+        ptrs.push_back(ptr);
+        CHECK(ptrs.size() == number_of_push_backs_until_resize);
     }
 }
