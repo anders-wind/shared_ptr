@@ -97,4 +97,10 @@ TEST_SUITE("local::shared_ptr")  // NOLINT
         }
         CHECK(was_called);
     }
+
+    TEST_CASE("local::shared_ptr: copying a nullptr is okay")
+    {
+        auto empty = wind::local::shared_ptr<int>();
+        auto copy = empty;  // NOLINT
+    }
 }

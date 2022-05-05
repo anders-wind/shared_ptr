@@ -6,6 +6,7 @@
 
 #include <benchmark/benchmark.h>
 #include <shared_ptr/bias_shared_ptr.hpp>
+#include <shared_ptr/bias_shared_ptr_2.hpp>
 #include <shared_ptr/local_shared_ptr.hpp>
 
 // benchmark functions
@@ -121,7 +122,7 @@ static void bm_copying_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copying(state.range(0), []() { return wind::bias::make_shared<int64_t>(42); });
+        copying(state.range(0), []() { return wind::bias_2::make_shared<int64_t>(42); });
     }
 }
 
@@ -147,7 +148,7 @@ static void bm_copy_and_release_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_and_release(state.range(0), 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+        copy_and_release(state.range(0), 128, [](auto i) { return wind::bias_2::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -173,7 +174,7 @@ static void bm_copy_and_release_many_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        copy_and_release_many(state.range(0), 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+        copy_and_release_many(state.range(0), 128, [](auto i) { return wind::bias_2::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -199,7 +200,7 @@ static void bm_push_continuously_to_vector_bias(benchmark::State& state)
 {
     // NOLINTNEXTLINE
     for (auto _ : state) {
-        push_continuously_to_vector(state.range(0), [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+        push_continuously_to_vector(state.range(0), [](auto i) { return wind::bias_2::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -218,7 +219,7 @@ static void bm_copy_back_and_forth_between_threads_many_threads_many_copies_bias
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_back_and_forth_between_threads(
-            state.range(0), 128, 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+            state.range(0), 128, 128, [](auto i) { return wind::bias_2::make_shared<int64_t>(i * 2); });
     }
 }
 
@@ -236,7 +237,7 @@ static void bm_copy_back_and_forth_between_threads_many_threads_few_copies_bias(
     // NOLINTNEXTLINE
     for (auto _ : state) {
         copy_back_and_forth_between_threads(
-            state.range(0), 2, 128, [](auto i) { return wind::bias::make_shared<int64_t>(i * 2); });
+            state.range(0), 2, 128, [](auto i) { return wind::bias_2::make_shared<int64_t>(i * 2); });
     }
 }
 

@@ -1,8 +1,10 @@
 #pragma once
-#include <memory>
-#include <type_traits>
+#include <atomic>
+#include <utility>
 
-namespace wind::local
+#include <pthread.h>  // TODO handle this cross-platform
+
+namespace wind::bias_2
 {
 namespace detail
 {
@@ -10,29 +12,50 @@ template<typename T>
 struct control_block
 {
     T* data;
-    size_t counter;
+    std::atomic<size_t> global_counter {1};
 
     explicit control_block(T* i_data) noexcept
         : data {i_data}
-        , counter {1}
     {
     }
 
-    control_block(const control_block&) noexcept = default;
-    control_block(control_block&&) noexcept = default;
-    auto operator=(const control_block&) noexcept -> control_block& = default;
-    auto operator=(control_block&&) noexcept -> control_block& = default;
+    control_block(const control_block& other) noexcept = default;
+    control_block(control_block&& other) noexcept = default;
+    auto operator=(const control_block& other) noexcept -> control_block& = default;
+    auto operator=(control_block&& other) noexcept -> control_block& = default;
 
     virtual ~control_block() = default;
 
-    void inc() noexcept
+    void inc_global()
     {
-        this->counter++;
+        this->global_counter++;
     }
 
-    [[nodiscard]] auto decrement_and_check_zero() noexcept -> bool
+    void inc(size_t& counter) noexcept
     {
-        return --this->counter == 0;
+        counter++;
+    }
+
+    [[nodiscard]] auto decrement_and_check_zero(size_t& counter) noexcept -> bool
+    {
+        if (--counter == 0) {
+            return --this->global_counter == 0;
+        }
+        return false;
+    }
+};
+
+template<typename T>
+struct control_block_with_data : control_block<T>
+{
+    T val;
+    size_t counter_val {1};
+
+    template<typename... Args>
+    explicit control_block_with_data(Args&&... args) noexcept
+        : control_block<T>(&this->val)
+        , val {std::forward<Args>(args)...}
+    {
     }
 };
 
@@ -64,19 +87,6 @@ auto new_control_block_with_deleter(T* ptr, DeleterF&& deleter)
     return new control_block_with_deleter<T, DeleterF>(ptr, std::forward<DeleterF>(deleter));  // NOLINT
 }
 
-template<typename T>
-struct control_block_with_data final : control_block<T>
-{
-    T val;
-
-    template<typename... Args>
-    explicit control_block_with_data(Args&&... args) noexcept
-        : control_block<T>(&this->val)
-        , val {std::forward<Args>(args)...}
-    {
-    }
-};
-
 template<typename T, typename... Args>
 auto new_control_block_with_data(Args&&... args)
 {
@@ -88,40 +98,47 @@ auto new_control_block_with_data(Args&&... args)
 template<typename T>
 struct shared_ptr
 {
-    using element_type = typename std::remove_extent_t<T>;
     using counter_type = size_t;
+    using local_reference_counter_type = size_t;
+    using element_type = typename std::remove_extent_t<T>;
 
   private:
     detail::control_block<T>* control_block_ {nullptr};
+    pthread_t thread_id_ {pthread_self()};
+    pthread_key_t key_ {};
+    bool delete_counter_ {true};
 
   public:
     shared_ptr() = default;
 
-    explicit shared_ptr(element_type* ptr)
-        : control_block_(detail::new_control_block_with_deleter(ptr, std::default_delete<element_type>()))
+    explicit shared_ptr(detail::control_block_with_data<T>* control)
+        : control_block_(control)
+        , delete_counter_(false)
     {
+        pthread_key_create(&this->key_, nullptr);
+        pthread_setspecific(this->key_, &control->counter_val);
     }
 
-    template<typename DeleterF>
-    shared_ptr(element_type* ptr, DeleterF&& deleter)
-        : control_block_(detail::new_control_block_with_deleter<element_type>(ptr, std::forward<DeleterF>(deleter)))
+    explicit shared_ptr(T* data)
+        : control_block_(detail::new_control_block_with_deleter(data, std::default_delete<element_type>()))
     {
-    }
-
-    explicit shared_ptr(detail::control_block<element_type>* control_block)
-        : control_block_(control_block)
-    {
+        pthread_key_create(&this->key_, nullptr);
+        pthread_setspecific(this->key_, new size_t(1));
     }
 
     // stuff
     shared_ptr(const shared_ptr& other) noexcept
         : control_block_(other.control_block_)
+        , key_(other.key_)
+        , delete_counter_(other.delete_counter_)
     {
         this->inc();
     }
 
     shared_ptr(shared_ptr&& other) noexcept
         : control_block_(std::move(other.control_block_))
+        , key_(other.key_)
+        , delete_counter_(other.delete_counter_)
     {
         other.control_block_ = nullptr;
     }
@@ -135,6 +152,8 @@ struct shared_ptr
         if (this->control_block_ != other.control_block_) {
             this->decrement_and_maybe_delete();
             this->control_block_ = other.control_block_;
+            this->key_ = other.key_;
+            this->delete_counter_ = other.delete_counter_;
             this->inc();
         }
         return *this;
@@ -148,6 +167,9 @@ struct shared_ptr
 
         this->decrement_and_maybe_delete();
         this->control_block_ = other.control_block_;
+        this->key_ = other.key_;
+        this->delete_counter_ = other.delete_counter_;
+
         other.control_block_ = nullptr;
         return *this;
     }
@@ -159,11 +181,17 @@ struct shared_ptr
 
     [[nodiscard]] auto get() noexcept -> element_type*
     {
+        if (this->control_block_ == nullptr) {
+            return nullptr;
+        }
         return this->control_block_->data;
     }
 
     [[nodiscard]] auto get() const noexcept -> const element_type*
     {
+        if (this->control_block_ == nullptr) {
+            return nullptr;
+        }
         return this->control_block_->data;
     }
 
@@ -179,11 +207,19 @@ struct shared_ptr
 
     [[nodiscard]] auto operator->() const noexcept -> const element_type*
     {
+        // TODO(wind) all these if statements for getting the element should be optimized by caching T* in the
+        // shared_ptr. also helps with double indirect
+        if (this->control_block_ == nullptr) {
+            return nullptr;
+        }
         return this->control_block_->data;
     }
 
     [[nodiscard]] auto operator->() noexcept -> element_type*
     {
+        if (this->control_block_ == nullptr) {
+            return nullptr;
+        }
         return this->control_block_->data;
     }
 
@@ -200,6 +236,7 @@ struct shared_ptr
     void swap(shared_ptr other)
     {
         std::swap(this->control_block_, other->control_block_);
+        std::swap(this->key_, other->key_);
     }
 
     [[nodiscard]] explicit operator bool() const
@@ -208,18 +245,37 @@ struct shared_ptr
     }
 
   private:
+    [[nodiscard]] auto get_local_counter() -> local_reference_counter_type*
+    {
+        auto* counter = static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_));
+        if (counter == nullptr) {
+            counter = new local_reference_counter_type(0);  // NOLINT
+            this->control_block_->inc_global();
+            pthread_setspecific(this->key_, counter);
+            this->delete_counter_ = true;
+        }
+        return counter;
+    }
+
     void inc() noexcept
     {
         if (this->control_block_ != nullptr) {
-            this->control_block_->inc();
+            this->control_block_->inc(*this->get_local_counter());
         }
     }
 
-    void decrement_and_maybe_delete() noexcept
+    void decrement_and_maybe_delete()
     {
         if (this->control_block_ != nullptr) {
-            if (this->control_block_->decrement_and_check_zero()) {
+            auto* local_counter = this->get_local_counter();
+            auto delete_control_block = this->control_block_->decrement_and_check_zero(*local_counter);
+
+            if (*local_counter == 0 && this->delete_counter_) {
+                delete local_counter;  // NOLINT
+            }
+            if (delete_control_block) {
                 delete this->control_block_;
+                pthread_key_delete(this->key_);
             }
         }
     }
@@ -233,4 +289,4 @@ auto make_shared(Args&&... args) -> shared_ptr<typename std::remove_extent_t<T>>
     return shared_ptr<element_type> {detail::new_control_block_with_data<element_type>(std::forward<Args>(args)...)};
 }
 
-}  // namespace wind::local
+}  // namespace wind::bias_2
