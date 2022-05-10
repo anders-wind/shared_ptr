@@ -137,7 +137,7 @@ struct shared_ptr
         , key_(other.key_)
         , delete_counter_(other.delete_counter_)
     {
-        this->inc();
+        this->initial_or_inc();
     }
 
     shared_ptr(shared_ptr&& other) noexcept
@@ -159,7 +159,7 @@ struct shared_ptr
             this->control_block_ = other.control_block_;
             this->key_ = other.key_;
             this->delete_counter_ = other.delete_counter_;
-            this->inc();
+            this->initial_or_inc();
         }
         return *this;
     }
@@ -186,6 +186,7 @@ struct shared_ptr
     ~shared_ptr() noexcept
     {
         this->decrement_and_maybe_delete();
+        this->control_block_ = nullptr;
     }
 
     [[nodiscard]] auto get() noexcept -> element_type*
@@ -254,11 +255,11 @@ struct shared_ptr
     }
 
   private:
-    [[nodiscard]] auto get_local_counter() -> local_reference_counter_type*
+    [[nodiscard]] auto get_local_counter(int32_t initial_count = 1) -> local_reference_counter_type*
     {
         auto* counter = static_cast<local_reference_counter_type*>(pthread_getspecific(this->key_));
         if (counter == nullptr) {
-            counter = new local_reference_counter_type(0);  // NOLINT
+            counter = new local_reference_counter_type(initial_count);  // NOLINT
             this->control_block_->inc_global();
             pthread_setspecific(this->key_, counter);
             this->delete_counter_ = true;
@@ -266,10 +267,10 @@ struct shared_ptr
         return counter;
     }
 
-    void inc() noexcept
+    void initial_or_inc() noexcept
     {
         if (this->control_block_ != nullptr) {
-            this->control_block_->inc(*this->get_local_counter());
+            this->control_block_->inc(*this->get_local_counter(0));
         }
     }
 
