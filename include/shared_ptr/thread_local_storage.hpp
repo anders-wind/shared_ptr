@@ -1,5 +1,6 @@
 #include <cinttypes>
-#include <unordered_map>
+
+#include <robin_hood.h>
 
 namespace wind
 {
@@ -11,9 +12,9 @@ struct thread_local_storage
     static constexpr std::size_t initial_storage = 1024;
 
   private:
-    static auto values() -> std::unordered_map<key_t, T>&
+    static auto values() -> robin_hood::unordered_map<key_t, T>&
     {
-        thread_local std::unordered_map<key_t, T> values = std::unordered_map<key_t, T>(initial_storage);
+        thread_local robin_hood::unordered_map<key_t, T> values = robin_hood::unordered_map<key_t, T>(initial_storage);
         return values;
     }
 

@@ -18,6 +18,7 @@ include(cmake/CPM.cmake)
 # ---- Dependencies ----
 
 find_package(Threads REQUIRED)
+CPMAddPackage("gh:martinus/robin-hood-hashing#3.11.5")
 
 # ---- Declare library ----
 
@@ -37,7 +38,7 @@ target_include_directories(
 
 target_compile_features(shared_ptr_shared_ptr INTERFACE cxx_std_20)
 
-target_link_libraries(shared_ptr_shared_ptr INTERFACE Threads::Threads)
+target_link_libraries(shared_ptr_shared_ptr INTERFACE robin_hood::robin_hood Threads::Threads)
 
 # ---- Install rules ----
 
