@@ -1,4 +1,5 @@
 #include <functional>
+#include <vector>
 
 #include <doctest/doctest.h>
 #include <shared_ptr/local_shared_ptr.hpp>
@@ -96,5 +97,19 @@ TEST_SUITE("local::shared_ptr")  // NOLINT
             CHECK(!was_called);
         }
         CHECK(was_called);
+    }
+
+    TEST_CASE("local::shared_ptr: copying a nullptr is okay")
+    {
+        auto empty = wind::local::shared_ptr<int>();
+        auto copy = empty;  // NOLINT
+    }
+
+    TEST_CASE("local::shared_ptr: push_back on vector")
+    {
+        auto ptrs = std::vector<wind::local::shared_ptr<int>>();
+        for (int i = 0; i < static_cast<int>(1024); i++) {
+            ptrs.push_back(wind::local::make_shared<int>(42 * i));
+        }
     }
 }

@@ -49,7 +49,7 @@
       "name": "flags-sanitize",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS_SANITIZE": "-O2 -g -fsanitize=address,undefined -fno-omit-frame-pointer -fno-common"
+        "CMAKE_CXX_FLAGS_SANITIZE": "-O0 -g -fsanitize=address,undefined -fno-omit-frame-pointer -fno-common"
       }
     },
     {
@@ -94,7 +94,7 @@
         "flags-windows",
         "ci-std"
       ],
-      "generator": "Visual Studio 16 2019",
+      "generator": "Visual Studio 17 2022",
       "architecture": "x64",
       "hidden": true
     },

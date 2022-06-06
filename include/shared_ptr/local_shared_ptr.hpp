@@ -12,9 +12,9 @@ struct control_block
     T* data;
     size_t counter;
 
-    control_block(T* i_data, size_t i_counter) noexcept
+    explicit control_block(T* i_data) noexcept
         : data {i_data}
-        , counter {i_counter}
+        , counter {1}
     {
     }
 
@@ -24,6 +24,16 @@ struct control_block
     auto operator=(control_block&&) noexcept -> control_block& = default;
 
     virtual ~control_block() = default;
+
+    void inc() noexcept
+    {
+        this->counter++;
+    }
+
+    [[nodiscard]] auto decrement_and_check_zero() noexcept -> bool
+    {
+        return --this->counter == 0;
+    }
 };
 
 template<typename T, typename DeleterF>
@@ -32,7 +42,7 @@ struct control_block_with_deleter final : control_block<T>
     DeleterF deleter;
 
     control_block_with_deleter(T* i_data, DeleterF i_deleter) noexcept
-        : control_block<T>(i_data, 1)
+        : control_block<T>(i_data)
         , deleter {std::move(i_deleter)}
     {
     }
@@ -61,7 +71,7 @@ struct control_block_with_data final : control_block<T>
 
     template<typename... Args>
     explicit control_block_with_data(Args&&... args) noexcept
-        : control_block<T>(&this->val, 1)
+        : control_block<T>(&this->val)
         , val {std::forward<Args>(args)...}
     {
     }
@@ -107,7 +117,7 @@ struct shared_ptr
     shared_ptr(const shared_ptr& other) noexcept
         : control_block_(other.control_block_)
     {
-        this->control_block_->counter++;
+        this->inc();
     }
 
     shared_ptr(shared_ptr&& other) noexcept
@@ -125,7 +135,7 @@ struct shared_ptr
         if (this->control_block_ != other.control_block_) {
             this->decrement_and_maybe_delete();
             this->control_block_ = other.control_block_;
-            this->control_block_->counter++;
+            this->inc();
         }
         return *this;
     }
@@ -167,6 +177,16 @@ struct shared_ptr
         return *this->control_block_->data;
     }
 
+    [[nodiscard]] auto operator->() const noexcept -> const element_type*
+    {
+        return this->control_block_->data;
+    }
+
+    [[nodiscard]] auto operator->() noexcept -> element_type*
+    {
+        return this->control_block_->data;
+    }
+
     [[nodiscard]] auto use_count() const -> const counter_type&
     {
         return this->control_block_->counter;
@@ -188,10 +208,17 @@ struct shared_ptr
     }
 
   private:
+    void inc() noexcept
+    {
+        if (this->control_block_ != nullptr) {
+            this->control_block_->inc();
+        }
+    }
+
     void decrement_and_maybe_delete() noexcept
     {
         if (this->control_block_ != nullptr) {
-            if (--this->control_block_->counter <= 0) {
+            if (this->control_block_->decrement_and_check_zero()) {
                 delete this->control_block_;
             }
         }

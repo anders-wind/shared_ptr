@@ -17,7 +17,8 @@ set_target_properties(doctest PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<
 add_executable(shared_ptr_test 
   source/main_test.cpp 
   source/local_shared_ptr_test.cpp 
-  source/bias_shared_ptr_test.cpp)
+  source/bias_shared_ptr_test.cpp
+)
 
 target_link_libraries(shared_ptr_test 
   PRIVATE wind::shared_ptr doctest::doctest)
