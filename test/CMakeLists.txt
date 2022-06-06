@@ -18,7 +18,6 @@ add_executable(shared_ptr_test
   source/main_test.cpp 
   source/local_shared_ptr_test.cpp 
   source/bias_shared_ptr_test.cpp
-  source/bias_shared_ptr_3_test.cpp
 )
 
 target_link_libraries(shared_ptr_test 
