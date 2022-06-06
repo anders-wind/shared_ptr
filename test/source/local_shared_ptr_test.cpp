@@ -1,4 +1,5 @@
 #include <functional>
+#include <vector>
 
 #include <doctest/doctest.h>
 #include <shared_ptr/local_shared_ptr.hpp>
