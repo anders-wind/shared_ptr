@@ -2,18 +2,20 @@
 #include <memory>
 #include <type_traits>
 
+#include <shared_ptr/bias_ref_counter.hpp>
 #include <shared_ptr/control_block.hpp>
 
-namespace wind::local
+namespace wind::bias_new
 {
 template<typename T>
 struct shared_ptr
 {
     using element_type = typename std::remove_extent_t<T>;
     using counter_type = size_t;
+    using control_block_t = detail::control_block<T, details::bias_ref_counter>;
 
   private:
-    detail::control_block<T, std::size_t>* control_block_ {nullptr};
+    control_block_t* control_block_ {nullptr};
 
   public:
     shared_ptr() = default;
@@ -29,7 +31,7 @@ struct shared_ptr
     {
     }
 
-    explicit shared_ptr(detail::control_block<element_type, std::size_t>* control_block)
+    explicit shared_ptr(control_block_t* control_block)
         : control_block_(control_block)
     {
     }
@@ -75,9 +77,21 @@ struct shared_ptr
 
     ~shared_ptr() noexcept { this->decrement_and_maybe_delete(); }
 
-    [[nodiscard]] auto get() noexcept -> element_type* { return this->control_block_->data; }
+    [[nodiscard]] auto get() noexcept -> element_type*
+    {
+        if (this->control_block_ == nullptr) {
+            return nullptr;
+        }
+        return this->control_block_->data;
+    }
 
-    [[nodiscard]] auto get() const noexcept -> const element_type* { return this->control_block_->data; }
+    [[nodiscard]] auto get() const noexcept -> const element_type*
+    {
+        if (this->control_block_ == nullptr) {
+            return nullptr;
+        }
+        return this->control_block_->data;
+    }
 
     [[nodiscard]] auto operator*() const -> const element_type& { return *this->control_block_->data; }
 
@@ -119,7 +133,7 @@ auto make_shared(Args&&... args) -> shared_ptr<typename std::remove_extent_t<T>>
     using element_type = typename std::remove_extent_t<T>;
 
     return shared_ptr<element_type> {
-        detail::new_control_block_with_data<element_type, std::size_t>(std::forward<Args>(args)...)};
+        detail::new_control_block_with_data<element_type, details::bias_ref_counter>(std::forward<Args>(args)...)};
 }
 
-}  // namespace wind::local
+}  // namespace wind::bias_new

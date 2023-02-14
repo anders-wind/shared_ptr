@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <doctest/doctest.h>
+#include <shared_ptr/bias_ref_counter.hpp>
 #include <shared_ptr/thread_local_counter.hpp>
 
 TEST_SUITE("thread_local_counter")

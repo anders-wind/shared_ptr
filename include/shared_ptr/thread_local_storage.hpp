@@ -35,19 +35,10 @@ struct thread_local_storage
         return {values().at(*key), false};
     }
 
-    static auto contains(key_t key) noexcept -> bool
-    {
-        return values().contains(key);
-    }
+    static auto contains(key_t key) noexcept -> bool { return values().contains(key); }
 
-    static auto get(key_t key) noexcept -> T&
-    {
-        return values().at(key);
-    }
-    static auto return_key(key_t key) noexcept -> void
-    {
-        values().erase(key);
-    }
+    static auto get(key_t key) noexcept -> T& { return values().at(key); }
+    static auto return_key(key_t key) noexcept -> void { values().erase(key); }
 };
 
 }  // namespace wind

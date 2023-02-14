@@ -106,15 +106,9 @@ struct shared_ptr
         return this->control_block_->data;
     }
 
-    [[nodiscard]] auto operator*() const -> const element_type&
-    {
-        return *this->control_block_->data;
-    }
+    [[nodiscard]] auto operator*() const -> const element_type& { return *this->control_block_->data; }
 
-    [[nodiscard]] auto operator*() -> element_type&
-    {
-        return *this->control_block_->data;
-    }
+    [[nodiscard]] auto operator*() -> element_type& { return *this->control_block_->data; }
 
     [[nodiscard]] auto operator->() const noexcept -> const element_type*
     {
@@ -134,15 +128,9 @@ struct shared_ptr
         return this->control_block_->data;
     }
 
-    [[nodiscard]] auto use_count() const -> const counter_type&
-    {
-        return this->control_block_->counter;
-    }
+    [[nodiscard]] auto use_count() const -> const counter_type& { return this->control_block_->counter; }
 
-    [[nodiscard]] auto unique() const -> size_t
-    {
-        return this->control_block_->counter == 1;
-    }
+    [[nodiscard]] auto unique() const -> size_t { return this->control_block_->counter == 1; }
 
     void swap(shared_ptr other)
     {
@@ -150,10 +138,7 @@ struct shared_ptr
         std::swap(this->key_, other->key_);
     }
 
-    [[nodiscard]] explicit operator bool() const
-    {
-        return this->control_block_ != nullptr;
-    }
+    [[nodiscard]] explicit operator bool() const { return this->control_block_ != nullptr; }
 
   private:
     [[nodiscard]] auto get_local_counter(local_reference_counter_type initial_count = 1) noexcept

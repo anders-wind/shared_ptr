@@ -23,15 +23,9 @@ struct control_block
 
     virtual ~control_block() = default;
 
-    void inc() noexcept
-    {
-        this->counter++;
-    }
+    void inc() noexcept { ++this->counter; }
 
-    [[nodiscard]] auto decrement_and_check_zero() noexcept -> bool
-    {
-        return --this->counter == 0;
-    }
+    [[nodiscard]] auto decrement_and_check_zero() noexcept -> bool { return --this->counter == 0; }
 };
 
 template<typename T, typename CounterTypeT, typename DeleterF>
@@ -50,10 +44,7 @@ struct control_block_with_deleter final : control_block<T, CounterTypeT>
     auto operator=(const control_block_with_deleter&) noexcept -> control_block_with_deleter& = default;
     auto operator=(control_block_with_deleter&&) noexcept -> control_block_with_deleter& = default;
 
-    ~control_block_with_deleter() noexcept override
-    {
-        this->deleter(this->data);
-    };
+    ~control_block_with_deleter() noexcept override { this->deleter(this->data); };
 };
 
 template<typename CounterTypeT, typename T, typename DeleterF>

@@ -26,10 +26,6 @@ target_link_libraries(shared_ptr_test
 
 target_compile_features(shared_ptr_test PRIVATE cxx_std_20)
 
-cmake_host_system_information(RESULT N
-                              QUERY NUMBER_OF_LOGICAL_CORES)
-target_compile_definitions(shared_ptr_test PUBLIC WIND_NUM_LOGICAL_CORES=${N})
-
 
 add_test(NAME shared_ptr_test COMMAND shared_ptr_test)
 
