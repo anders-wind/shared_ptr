@@ -141,10 +141,7 @@ TEST_SUITE("bias::shared_ptr")  // NOLINT
     struct deleter_ref
     {
         bool* was_deleted {nullptr};
-        ~deleter_ref()
-        {
-            *this->was_deleted = true;
-        }
+        ~deleter_ref() { *this->was_deleted = true; }
     };
 
     TEST_CASE("bias::shared_ptr_3: destructor gets")  // NOLINT

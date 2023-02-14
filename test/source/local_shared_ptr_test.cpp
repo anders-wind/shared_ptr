@@ -48,10 +48,7 @@ TEST_SUITE("local::shared_ptr")  // NOLINT
             : delete_func(std::move(func))
         {
         }
-        ~deleter_func_2()
-        {
-            this->delete_func();
-        }
+        ~deleter_func_2() { this->delete_func(); }
     };
 
     TEST_CASE("local::shared_ptr: Delete gets called")  // NOLINT
